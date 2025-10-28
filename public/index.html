@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Se Mexe - Encontre seu Jogo em Pelotas</title>
+    
+    <link rel="stylesheet" href="style.css">
+    <!-- Fontes e icones -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link rel="shortcut icon" href="renderJogajunto.png" type="image/x-icon">
+</head>
+<body>
+
+    <header>
+        <nav class="container">
+            <a href="#" class="logo">Se Mexe</a>
+            <ul>
+                <li><a href="cadastro.html">Cadastrar</a></li>
+                <li><a href="login.html">Login</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main class="container">
+        <section class="hero">
+            <h1>Encontre sua atividade e #SeMexe</h1>
+            <p>A maneira mais fácil de conectar-se com sua atividade preferida.</p>
+        </section>
+
+        <section class="events-section">
+            <h2>Atividades Abertas em Pelotas</h2>
+            <div class="filters">
+                <button class="filter-btn active">Todos</button>
+                <button class="filter-btn">Futebol</button>
+                <button class="filter-btn">Vôlei</button>
+                <button class="filter-btn">Basquete</button>
+                <button class="filter-btn">Corrida</button>
+            </div>
+
+            <div class="event-list">
+
+                <article class="event-card">
+                    <div class="card-header">
+                        <i class="fa-solid fa-futbol card-icon"></i>
+                        <h3>Futebol de Sábado</h3>
+                    </div>
+                    <div class="card-body">
+                        <p><i class="fa-solid fa-location-dot"></i> Parque da Baronesa</p>
+                        <p><i class="fa-solid fa-calendar-days"></i> Sábado, 20/09, 15:00h</p>
+                    </div>
+                    <div class="card-footer">
+                        <span class="vacancies">Vagas: 7 / 10</span>
+                        <a href="#"  class="btn-details">Ver Detalhes</a>
+                    </div>
+                </article>
+
+                <article class="event-card">
+                    <div class="card-header">
+                        <i class="fa-solid fa-volleyball card-icon"></i>
+                        <h3>Vôlei de Praia</h3>
+                    </div>
+                    <div class="card-body">
+                        <p><i class="fa-solid fa-location-dot"></i> Laranjal (Trapiche)</p>
+                        <p><i class="fa-solid fa-calendar-days"></i> Sábado, 20/09, 17:00h</p>
+                    </div>
+                    <div class="card-footer">
+                        <span class="vacancies">Vagas: 3 / 8</span>
+                        <a href="#" class="btn-details">Ver Detalhes</a>
+                    </div>
+                </article>
+
+                <article class="event-card">
+                    <div class="card-header">
+                        <i class="fa-solid fa-person-running card-icon"></i>
+                        <h3>Corrida no Centro</h3>
+                    </div>
+                    <div class="card-body">
+                        <p><i class="fa-solid fa-location-dot"></i> Ponto de encontro: Chafariz</p>
+                        <p><i class="fa-solid fa-calendar-days"></i> Domingo, 21/09, 08:00h</p>
+                    </div>
+                    <div class="card-footer">
+                        <span class="vacancies">Vagas: 12 / 20</span>
+                        <a href="#" class="btn-details">Ver Detalhes</a>
+                    </div>
+                </article>
+
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container footer-content">
+            <div class="footer-form-section">
+                <h4>Fale Conosco</h4>
+                <p>Tem alguma dúvida ou sugestão? Envie-nos uma mensagem!</p>
+                <form id="feedback-form">
+                    <div class="form-group-inline">
+                        <input type="text" id="feedback-nome" placeholder="Seu nome" required>
+                        <input type="email" id="feedback-email" placeholder="Seu email" required>
+                    </div>
+                    <textarea id="feedback-mensagem" placeholder="Sua mensagem..." rows="3" required></textarea>
+                    <button type="submit" class="btn-submit-footer">Enviar</button>
+                    <p id="feedback-status" class="feedback-status"></p>
+                </form>
+            </div>
+            <div class="footer-links-section">
+                <h4>Se mexe</h4>
+                <p>&copy; 2025 Se Mexe. Todos os direitos reservados.</p>
+                <div class="social-links">
+                    <a href="#" aria-label="Facebook"><i class="fa-brands fa-facebook-f"></i></a>
+                    <a href="#" aria-label="Instagram"><i class="fa-brands fa-instagram"></i></a>
+                    <a href="#" aria-label="Twitter"><i class="fa-brands fa-twitter"></i></a>
+                </div>
+            </div>
+        </div>
+    </footer>
+    <script src="main.js"></script>
+</body>
+</html>
