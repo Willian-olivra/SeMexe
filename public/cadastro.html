@@ -5,8 +5,12 @@
     <link rel="stylesheet" href="style.css">
     </head>
 <body>
-    <header>
+        <header>
+        <nav class="container">
+            <a href="index.html" class="logo">Se Mexe <img src="logo.png" alt=""></a>
+        </nav>
         </header>
+            <a href="index.html" class="btn-back">Voltar para o inicio</a>
     <main class="container">
         <div class="form-container">
             <h2>Crie sua Conta</h2>
@@ -24,6 +28,7 @@
                     <label for="password">Senha</label>
                     <input type="password" id="password" name="password" required minlength="6">
                 </div>
+                <p>Já possui uma conta? <a href="login.html">Entre Aqui</a></p>
                 
                 <p id="auth-status" style="text-align: center; margin-bottom: 15px; height: 1em;"></p>
                 
@@ -35,6 +40,6 @@
         <p>&copy; 2025 Se Mexe. Todos os direitos reservados.</p>
     </footer>
 
-    <script src="auth.js"></script>
+    <script src="js/auth.js"></script>
 </body>
 </html>

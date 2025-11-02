@@ -3,41 +3,56 @@
     padding: 0;
     box-sizing: border-box;
 }
+
 body {
     font-family: 'Poppins', sans-serif;
     background-color: #f4f7f6;
-    background-image: url(https://www.google.com/url?sa=i&url=https%3A%2F%2Fwww.atletis.com.br%2Fcomo-organizar-torneio-volei-de-praia&psig=AOvVaw1qhpL3Zy4NnjUGlkiuKB9Z&ust=1760104522111000&source=images&cd=vfe&opi=89978449&ved=0CBUQjRxqFwoTCLjdwbiil5ADFQAAAAAdAAAAABAE);
     color: #333;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
 }
+
 .container {
     max-width: 1200px;
     margin: 0 auto;
     padding: 0 20px;
 }
+
+/* HEADER */
 header {
     background-color: #fff;
     padding: 20px 0;
     border-bottom: 1px solid #ddd;
     position: sticky;
     top: 0;
-    z-index: 10;
+    z-index: 100;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
 }
+
 nav {
     display: flex;
     justify-content: space-between;
     align-items: center;
 }
+
 .logo {
-    font-size: 1.5rem;
+    font-size: 1.8rem;
     font-weight: 700;
     color: #2a9d8f;
     text-decoration: none;
+    transition: transform 0.3s;
+}
+
+.logo:hover {
+    transform: scale(1.05);
 }
 
 nav ul {
     list-style: none;
     display: flex;
     gap: 20px;
+    align-items: center;
 }
 
 nav a {
@@ -50,32 +65,51 @@ nav a {
 nav a:hover {
     color: #2a9d8f;
 }
+
+/* HERO */
 .hero {
     text-align: center;
     padding: 60px 0;
 }
+
 .hero h1 {
     font-size: 2.5rem;
     margin-bottom: 10px;
+    color: #264653;
 }
+
 .hero p {
     font-size: 1.1rem;
     color: #666;
 }
-.events-section {
+
+/* EVENTOS */
+.events-section, .user-events-section {
     padding-bottom: 60px;
+    flex: 1;
 }
-.events-section h2 {
+
+.events-section h2, .user-events-section h2 {
     text-align: center;
-    margin-bottom: 30px;
+    margin-bottom: 15px;
     font-size: 2rem;
+    color: #264653;
 }
+
+.user-events-section > p {
+    text-align: center;
+    margin-bottom: 40px;
+    color: #666;
+}
+
 .filters {
     display: flex;
     justify-content: center;
     gap: 15px;
     margin-bottom: 40px;
+    flex-wrap: wrap;
 }
+
 .filter-btn {
     padding: 10px 20px;
     border: 1px solid #ccc;
@@ -86,20 +120,24 @@ nav a:hover {
     font-weight: 500;
     transition: all 0.3s;
 }
+
 .filter-btn:hover {
     background-color: #e9e9e9;
     border-color: #aaa;
 }
+
 .filter-btn.active {
     background-color: #2a9d8f;
     color: #fff;
     border-color: #2a9d8f;
 }
+
 .event-list {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
     gap: 25px;
 }
+
 .event-card {
     background-color: #fff;
     border-radius: 10px;
@@ -109,10 +147,12 @@ nav a:hover {
     flex-direction: column;
     transition: transform 0.3s, box-shadow 0.3s;
 }
+
 .event-card:hover {
     transform: translateY(-5px);
     box-shadow: 0 8px 16px rgba(0,0,0,0.12);
 }
+
 .card-header {
     display: flex;
     align-items: center;
@@ -120,17 +160,22 @@ nav a:hover {
     padding: 20px;
     border-bottom: 1px solid #eee;
 }
+
 .card-icon {
     font-size: 2rem;
     color: #2a9d8f;
 }
+
 .card-header h3 {
     font-size: 1.25rem;
+    color: #264653;
 }
+
 .card-body {
     padding: 20px;
     flex-grow: 1;
 }
+
 .card-body p {
     color: #555;
     margin-bottom: 10px;
@@ -138,13 +183,21 @@ nav a:hover {
     align-items: center;
     gap: 10px;
 }
+
+.card-body p i {
+    color: #2a9d8f;
+    width: 20px;
+}
+
 .card-footer {
     display: flex;
     justify-content: space-between;
     align-items: center;
     padding: 20px;
     background-color: #fafafa;
+    gap: 10px;
 }
+
 .vacancies {
     font-weight: 500;
     background-color: #e0f2f1;
@@ -153,6 +206,7 @@ nav a:hover {
     border-radius: 15px;
     font-size: 0.9rem;
 }
+
 .btn-details {
     background-color: #2a9d8f;
     color: #fff;
@@ -162,90 +216,9 @@ nav a:hover {
     font-weight: 500;
     transition: background-color 0.3s;
 }
+
 .btn-details:hover {
     background-color: #217a6f;
-}
-footer {
-    text-align: center;
-    padding: 20px;
-    background-color: #333;
-    color: #fff;
-}
-/* Estilos para Formulários */
-.form-container {
-    max-width: 500px;
-    margin: 40px auto;
-    padding: 30px;
-    background-color: #fff;
-    border-radius: 10px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-}
-
-.form-container h2 {
-    text-align: center;
-    margin-bottom: 30px;
-}
-
-.form-group {
-    margin-bottom: 20px;
-}
-
-.form-group label {
-    display: block;
-    margin-bottom: 8px;
-    font-weight: 500;
-    color: #555;
-}
-
-.form-group input {
-    width: 100%;
-    padding: 12px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    font-family: 'Poppins', sans-serif;
-    font-size: 1rem;
-}
-
-.btn-submit {
-    width: 100%;
-    padding: 15px;
-    background-color: #2a9d8f;
-    color: #fff;
-    border: none;
-    border-radius: 5px;
-    font-size: 1.1rem;
-    font-weight: 700;
-    cursor: pointer;
-    transition: background-color 0.3s;
-}
-
-.btn-submit:hover {
-    background-color: #217a6f;
-}
-
-.btn-logout {
-    background-color: #e76f51;
-    color: #fff !important;
-    padding: 8px 15px;
-    border-radius: 5px;
-    transition: background-color 0.3s;
-}
-
-.btn-logout:hover {
-    background-color: #d16144;
-}
-
-.user-events-section {
-    padding-bottom: 60px;
-}
-.user-events-section h2 {
-    text-align: center;
-    font-size: 2rem;
-}
-.user-events-section p {
-    text-align: center;
-    margin-bottom: 40px;
-    color: #666;
 }
 
 .card-actions {
@@ -261,6 +234,10 @@ footer {
     font-weight: 500;
     cursor: pointer;
     transition: background-color 0.3s;
+    font-family: 'Poppins', sans-serif;
+    display: flex;
+    align-items: center;
+    gap: 5px;
 }
 
 .btn-edit {
@@ -279,21 +256,100 @@ footer {
     background-color: #d16144;
 }
 
+/* FORMULÁRIOS */
+.form-container {
+    max-width: 500px;
+    margin: 40px auto;
+    padding: 30px;
+    background-color: #fff;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+
+.form-container h2 {
+    text-align: center;
+    margin-bottom: 30px;
+    color: #264653;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 500;
+    color: #555;
+}
+
+.form-group input, .form-group select {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-family: 'Poppins', sans-serif;
+    font-size: 1rem;
+    transition: border-color 0.3s;
+}
+
+.form-group input:focus, .form-group select:focus {
+    outline: none;
+    border-color: #2a9d8f;
+}
+
+.btn-submit {
+    width: 100%;
+    padding: 15px;
+    background-color: #2a9d8f;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    font-size: 1.1rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    font-family: 'Poppins', sans-serif;
+}
+
+.btn-submit:hover {
+    background-color: #217a6f;
+}
+
+.btn-submit:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+}
+
+.btn-logout {
+    background-color: #e76f51 !important;
+    color: #fff !important;
+    padding: 8px 15px;
+    border-radius: 5px;
+    transition: background-color 0.3s;
+}
+
+.btn-logout:hover {
+    background-color: #d16144 !important;
+}
+
+/* FOOTER */
 footer {
     background-color: #264653;
     color: #fff;
-    padding: 50px 0;
+    padding: 50px 0 20px 0;
+    margin-top: auto;
 }
 
 .footer-content {
     display: flex;
     justify-content: space-between;
     gap: 40px;
-    flex-wrap: wrap; 
+    flex-wrap: wrap;
 }
 
 .footer-form-section {
-    flex-basis: 60%; 
+    flex-basis: 60%;
     min-width: 300px;
 }
 
@@ -326,10 +382,11 @@ footer p {
     border: none;
     color: #fff;
     border-radius: 5px;
-    padding: 2%;
+    padding: 12px;
+    font-family: 'Poppins', sans-serif;
 }
 
-textarea {
+footer textarea {
     width: 100%;
     padding: 12px;
     border-radius: 5px;
@@ -339,9 +396,10 @@ textarea {
     border: none;
     color: #fff;
     margin-bottom: 15px;
+    resize: vertical;
 }
 
-input::placeholder, textarea::placeholder {
+footer input::placeholder, footer textarea::placeholder {
     color: #e0f2f1;
 }
 
@@ -355,6 +413,7 @@ input::placeholder, textarea::placeholder {
     font-weight: 700;
     cursor: pointer;
     transition: background-color 0.3s;
+    font-family: 'Poppins', sans-serif;
 }
 
 .btn-submit-footer:hover {
@@ -364,7 +423,7 @@ input::placeholder, textarea::placeholder {
 .feedback-status {
     margin-top: 10px;
     font-size: 0.9rem;
-    height: 1em; 
+    min-height: 1.5em;
 }
 
 .social-links {
@@ -381,4 +440,61 @@ input::placeholder, textarea::placeholder {
 
 .social-links a:hover {
     color: #e9c46a;
+}
+
+/* RESPONSIVO */
+@media (max-width: 768px) {
+    .hero h1 {
+        font-size: 2rem;
+    }
+
+    .filters {
+        gap: 10px;
+    }
+
+    .filter-btn {
+        padding: 8px 15px;
+        font-size: 0.9rem;
+    }
+
+    .event-list {
+        grid-template-columns: 1fr;
+    }
+
+    .footer-content {
+        flex-direction: column;
+    }
+
+    .footer-links-section {
+        text-align: left;
+    }
+
+    .form-group-inline {
+        flex-direction: column;
+    }
+
+    .form-group-inline input {
+        width: 100%;
+    }
+
+    nav ul {
+        gap: 10px;
+    }
+
+    nav a {
+        font-size: 0.9rem;
+    }
+}
+.btn-back {
+    background-color: #2a9d8f;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    padding: 10px;
+    justify-content:left ;
+    display: flex;
+}
+
+.btn-back:hover {
+    background-color: #217a6f;
 }

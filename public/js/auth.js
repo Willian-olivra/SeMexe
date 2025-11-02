@@ -24,6 +24,12 @@ document.addEventListener('DOMContentLoaded', () => {
                     body: JSON.stringify({ name: nome, email, password })
                 });
 
+                // Verificar content-type antes de fazer parse
+                const contentType = res.headers.get('content-type');
+                if (!contentType || !contentType.includes('application/json')) {
+                    throw new Error('Resposta inválida do servidor. Verifique se o backend está rodando.');
+                }
+
                 const data = await res.json();
 
                 if (res.ok) {
@@ -38,6 +44,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     throw new Error(data.error || 'Erro ao cadastrar.');
                 }
             } catch (error) {
+                console.error('Erro no cadastro:', error);
                 if (statusMessage) {
                     statusMessage.textContent = error.message;
                     statusMessage.style.color = '#e76f51';
@@ -66,6 +73,12 @@ document.addEventListener('DOMContentLoaded', () => {
                     body: JSON.stringify({ email, password })
                 });
 
+                // Verificar content-type antes de fazer parse
+                const contentType = res.headers.get('content-type');
+                if (!contentType || !contentType.includes('application/json')) {
+                    throw new Error('Resposta inválida do servidor. Verifique se o backend está rodando.');
+                }
+
                 const data = await res.json();
 
                 if (res.ok) {
@@ -86,6 +99,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     throw new Error(data.error || 'Erro ao fazer login.');
                 }
             } catch (error) {
+                console.error('Erro no login:', error);
                 if (statusMessage) {
                     statusMessage.textContent = error.message;
                     statusMessage.style.color = '#e76f51';

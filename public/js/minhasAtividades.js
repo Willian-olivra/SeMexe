@@ -16,9 +16,16 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             const response = await fetch('/api/atividades/minhas', {
                 headers: {
-                    'Authorization': `Bearer ${token}`
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
                 }
             });
+
+            // Verificar content-type
+            const contentType = response.headers.get('content-type');
+            if (!contentType || !contentType.includes('application/json')) {
+                throw new Error('Resposta do servidor não é JSON');
+            }
 
             if (!response.ok) {
                 if (response.status === 401) {
@@ -27,21 +34,31 @@ document.addEventListener('DOMContentLoaded', () => {
                     window.location.href = 'login.html';
                     return;
                 }
-                throw new Error('Erro ao carregar atividades');
+                const errorData = await response.json();
+                throw new Error(errorData.error || 'Erro ao carregar atividades');
             }
 
             const atividades = await response.json();
             renderizarMinhasAtividades(atividades);
         } catch (error) {
             console.error('Erro:', error);
-            eventList.innerHTML = '<p style="text-align: center; color: #e76f51;">Erro ao carregar suas atividades.</p>';
+            eventList.innerHTML = `
+                <div style="text-align: center; padding: 40px; grid-column: 1/-1;">
+                    <i class="fa-solid fa-exclamation-triangle" style="font-size: 3rem; color: #e76f51; margin-bottom: 20px;"></i>
+                    <p style="color: #e76f51; font-size: 1.1rem; margin-bottom: 10px;">Erro ao carregar suas atividades</p>
+                    <p style="color: #666; font-size: 0.9rem;">${error.message}</p>
+                    <button onclick="location.reload()" class="btn-submit" style="margin-top: 20px; width: auto; padding: 10px 20px;">
+                        Tentar Novamente
+                    </button>
+                </div>
+            `;
         }
     }
 
     function renderizarMinhasAtividades(atividades) {
         if (atividades.length === 0) {
             eventList.innerHTML = `
-                <div style="text-align: center; padding: 40px;">
+                <div style="text-align: center; padding: 40px; grid-column: 1/-1;">
                     <i class="fa-solid fa-calendar-xmark" style="font-size: 4rem; color: #ccc; margin-bottom: 20px;"></i>
                     <p style="color: #666; font-size: 1.2rem;">Você ainda não criou nenhuma atividade.</p>
                     <a href="criarAtividade.html" class="btn-submit" style="display: inline-block; margin-top: 20px; text-decoration: none;">Criar Primeira Atividade</a>
@@ -112,9 +129,16 @@ document.addEventListener('DOMContentLoaded', () => {
             const response = await fetch(`/api/atividades/${id}`, {
                 method: 'DELETE',
                 headers: {
-                    'Authorization': `Bearer ${token}`
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
                 }
             });
+
+            // Verificar content-type
+            const contentType = response.headers.get('content-type');
+            if (!contentType || !contentType.includes('application/json')) {
+                throw new Error('Resposta do servidor não é JSON');
+            }
 
             const data = await response.json();
 
@@ -125,6 +149,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 throw new Error(data.error || 'Erro ao excluir atividade');
             }
         } catch (error) {
+            console.error('Erro:', error);
             alert(error.message);
         }
     };
