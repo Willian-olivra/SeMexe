@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 // Sobe um nível (de 'routes' para 'backend') para encontrar o 'db.js'
-const pool = require('../db'); 
+const pool = require('../config/db'); 
 
 /**
  * @route   POST /api/feedback
