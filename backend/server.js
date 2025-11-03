@@ -16,6 +16,38 @@ app.use((req, res, next) => {
   next();
 });
 
+// --- ROTA DE TESTE/DEBUG ---
+app.get('/api/test', async (req, res) => {
+  const pool = require('./config/db');
+  try {
+    const [result] = await pool.query('SELECT 1 + 1 AS result');
+    const [tables] = await pool.query('SHOW TABLES');
+    const [atividadesCount] = await pool.query('SELECT COUNT(*) as total FROM atividades');
+    const [usuariosCount] = await pool.query('SELECT COUNT(*) as total FROM usuarios');
+    
+    res.json({
+      status: 'OK',
+      database: 'Conectado',
+      test_query: result[0].result,
+      tables: tables.map(t => Object.values(t)[0]),
+      atividades_count: atividadesCount[0].total,
+      usuarios_count: usuariosCount[0].total,
+      env_loaded: {
+        DB_HOST: !!process.env.DB_HOST,
+        DB_USER: !!process.env.DB_USER,
+        DB_NAME: !!process.env.DB_NAME,
+        JWT_SECRET: !!process.env.JWT_SECRET
+      }
+    });
+  } catch (error) {
+    res.status(500).json({
+      status: 'ERROR',
+      error: error.message,
+      stack: error.stack
+    });
+  }
+});
+
 // --- ROTAS DA API ---
 app.use('/api/users', require('./routes/users'));
 app.use('/api/feedback', require('./routes/feedback'));

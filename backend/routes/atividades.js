@@ -8,6 +8,7 @@ const authMiddleware = require('../middleware/auth');
  * @desc    Lista todas as atividades (pública)
  */
 router.get('/', async (req, res) => {
+  console.log('📥 GET /api/atividades - Listando atividades');
   try {
     const { esporte } = req.query;
     
@@ -28,11 +29,11 @@ router.get('/', async (req, res) => {
     query += ' ORDER BY a.data_hora ASC';
     
     const [rows] = await pool.query(query, params);
+    console.log(`✅ Encontradas ${rows.length} atividades`);
     
-    // IMPORTANTE: Sempre retornar JSON válido
     return res.status(200).json(rows);
   } catch (error) {
-    console.error('Erro ao buscar atividades:', error);
+    console.error('❌ Erro ao buscar atividades:', error);
     return res.status(500).json({ error: 'Erro ao buscar atividades' });
   }
 });
@@ -42,14 +43,16 @@ router.get('/', async (req, res) => {
  * @desc    Lista atividades do usuário logado (protegida)
  */
 router.get('/minhas', authMiddleware, async (req, res) => {
+  console.log(`📥 GET /api/atividades/minhas - Usuário: ${req.userId}`);
   try {
     const [rows] = await pool.query(
       'SELECT * FROM atividades WHERE id_usuario = ? ORDER BY data_hora DESC',
       [req.userId]
     );
+    console.log(`✅ Encontradas ${rows.length} atividades do usuário`);
     return res.status(200).json(rows);
   } catch (error) {
-    console.error('Erro ao buscar minhas atividades:', error);
+    console.error('❌ Erro ao buscar minhas atividades:', error);
     return res.status(500).json({ error: 'Erro ao buscar suas atividades' });
   }
 });
@@ -59,29 +62,38 @@ router.get('/minhas', authMiddleware, async (req, res) => {
  * @desc    Cria nova atividade (protegida)
  */
 router.post('/', authMiddleware, async (req, res) => {
+  console.log('📥 POST /api/atividades - Criar atividade');
+  console.log('👤 Usuário ID:', req.userId);
+  console.log('📦 Body recebido:', req.body);
+  
   const { esporte, titulo, local, data_hora, vagas } = req.body;
   
   if (!esporte || !titulo || !local || !data_hora || !vagas) {
+    console.log('❌ Campos obrigatórios faltando');
     return res.status(400).json({ error: 'Todos os campos são obrigatórios' });
   }
 
   if (vagas < 2) {
+    console.log('❌ Número de vagas inválido:', vagas);
     return res.status(400).json({ error: 'O número de vagas deve ser no mínimo 2' });
   }
 
   try {
+    console.log('💾 Inserindo no banco...');
     const [result] = await pool.query(
       'INSERT INTO atividades (esporte, titulo, local, data_hora, vagas, id_usuario) VALUES (?, ?, ?, ?, ?, ?)',
       [esporte, titulo, local, data_hora, vagas, req.userId]
     );
+    
+    console.log('✅ Atividade criada com ID:', result.insertId);
     
     return res.status(201).json({ 
       id: result.insertId, 
       message: 'Atividade criada com sucesso!' 
     });
   } catch (error) {
-    console.error('Erro ao criar atividade:', error);
-    return res.status(500).json({ error: 'Erro ao criar atividade' });
+    console.error('❌ Erro ao criar atividade:', error);
+    return res.status(500).json({ error: 'Erro ao criar atividade: ' + error.message });
   }
 });
 
@@ -91,6 +103,9 @@ router.post('/', authMiddleware, async (req, res) => {
  */
 router.put('/:id', authMiddleware, async (req, res) => {
   const { id } = req.params;
+  console.log(`📥 PUT /api/atividades/${id} - Atualizar atividade`);
+  console.log('📦 Body:', req.body);
+  
   const { esporte, titulo, local, data_hora, vagas } = req.body;
 
   try {
@@ -101,17 +116,20 @@ router.put('/:id', authMiddleware, async (req, res) => {
     );
 
     if (atividade.length === 0) {
+      console.log('❌ Atividade não encontrada ou sem permissão');
       return res.status(404).json({ error: 'Atividade não encontrada ou você não tem permissão' });
     }
 
+    console.log('💾 Atualizando atividade...');
     await pool.query(
       'UPDATE atividades SET esporte = ?, titulo = ?, local = ?, data_hora = ?, vagas = ? WHERE id = ?',
       [esporte, titulo, local, data_hora, vagas, id]
     );
 
+    console.log('✅ Atividade atualizada');
     return res.status(200).json({ message: 'Atividade atualizada com sucesso!' });
   } catch (error) {
-    console.error('Erro ao atualizar atividade:', error);
+    console.error('❌ Erro ao atualizar atividade:', error);
     return res.status(500).json({ error: 'Erro ao atualizar atividade' });
   }
 });
@@ -122,6 +140,7 @@ router.put('/:id', authMiddleware, async (req, res) => {
  */
 router.delete('/:id', authMiddleware, async (req, res) => {
   const { id } = req.params;
+  console.log(`📥 DELETE /api/atividades/${id} - Deletar atividade`);
 
   try {
     const [atividade] = await pool.query(
@@ -130,13 +149,17 @@ router.delete('/:id', authMiddleware, async (req, res) => {
     );
 
     if (atividade.length === 0) {
+      console.log('❌ Atividade não encontrada ou sem permissão');
       return res.status(404).json({ error: 'Atividade não encontrada ou você não tem permissão' });
     }
 
+    console.log('🗑️ Deletando atividade...');
     await pool.query('DELETE FROM atividades WHERE id = ?', [id]);
+    
+    console.log('✅ Atividade deletada');
     return res.status(200).json({ message: 'Atividade deletada com sucesso!' });
   } catch (error) {
-    console.error('Erro ao deletar atividade:', error);
+    console.error('❌ Erro ao deletar atividade:', error);
     return res.status(500).json({ error: 'Erro ao deletar atividade' });
   }
 });
