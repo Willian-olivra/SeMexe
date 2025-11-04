@@ -10,16 +10,23 @@
 </head>
 <body>
   <header>
-    <nav><ul id="nav-menu"></ul></nav>
-  </header>
+        <nav class="container">
+            <a href="index.html" class="logo">Se Mexe <img src="logo.png" alt=""></a>
+            <ul id="nav-menu"></ul>
+        </nav>
+    </header>
   <main class="atividade-container">
     <h1 id="titulo-atividade"></h1>
-    <!-- <button id="participar-btn" class="btn">Participar</button> -->
     <p><strong>Local:</strong> <span id="local-atividade"></span></p>
     <p><strong>Data:</strong> <span id="data-atividade"></span></p>
     <button id="participar-btn">Participar da Atividade</button>
     <div id="map" style="height: 300px; margin-top: 20px;"></div>
   </main>
+  <footer>
+    <div class="ft"><h4>Se Mexe</h4>
+        <p>&copy; 2025 Se Mexe. Todos os direitos reservados.</p>
+        </div>
+  </footer>
   <script src="js/utils.js"></script>
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="js/atividade.js"></script>
