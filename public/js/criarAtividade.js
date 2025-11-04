@@ -119,8 +119,7 @@ document.addEventListener('DOMContentLoaded', () => {
     logoutButtons.forEach(btn => {
         btn.addEventListener('click', (e) => {
             e.preventDefault();
-            localStorage.clear();
-            window.location.href = 'index.html';
+            fazerLogout(event);
         });
     });
 

@@ -70,4 +70,5 @@ app.use((req, res) => {
 // Inicia o servidor
 app.listen(PORT, () => {
   console.log(`\nServidor rodando em http://localhost:${PORT}`);
+
 });

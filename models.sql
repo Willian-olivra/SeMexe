@@ -27,3 +27,11 @@ CREATE TABLE feedback (
     mensagem TEXT,
     data_envio TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+CREATE TABLE participantes (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  usuario_id INT NOT NULL,
+  atividade_id INT NOT NULL,
+  data_inscricao TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (usuario_id) REFERENCES usuarios(id) ON DELETE CASCADE,
+  FOREIGN KEY (atividade_id) REFERENCES atividades(id) ON DELETE CASCADE
+);
