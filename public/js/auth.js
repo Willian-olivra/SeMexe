@@ -24,7 +24,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     body: JSON.stringify({ name: nome, email, password })
                 });
 
-                // Verificar content-type antes de fazer parse
                 const contentType = res.headers.get('content-type');
                 if (!contentType || !contentType.includes('application/json')) {
                     throw new Error('Resposta inválida do servidor. Verifique se o backend está rodando.');
@@ -73,7 +72,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     body: JSON.stringify({ email, password })
                 });
 
-                // Verificar content-type antes de fazer parse
                 const contentType = res.headers.get('content-type');
                 if (!contentType || !contentType.includes('application/json')) {
                     throw new Error('Resposta inválida do servidor. Verifique se o backend está rodando.');
@@ -82,9 +80,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 const data = await res.json();
 
                 if (res.ok) {
-                    // Armazena o token e informações do usuário
+                    // 🔧 Corrigido: salva corretamente tanto data.user quanto data.usuario
+                    const usuario = data.user || data.usuario;
+                    if (!usuario || !data.token) {
+                        throw new Error('Resposta inválida do servidor. Dados de login incompletos.');
+                    }
+
                     localStorage.setItem('token', data.token);
-                    localStorage.setItem('userInfo', JSON.stringify(data.user));
+                    localStorage.setItem('userInfo', JSON.stringify(usuario));
                     
                     if (statusMessage) {
                         statusMessage.textContent = 'Login bem-sucedido! Redirecionando...';

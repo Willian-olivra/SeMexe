@@ -88,40 +88,42 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function renderizarAtividades(atividades) {
-        if (!eventList) return;
+    if (!eventList) return;
 
-        if (atividades.length === 0) {
-            eventList.innerHTML = `
-                <div style="text-align: center; padding: 40px; grid-column: 1/-1;">
-                    <i class="fa-solid fa-calendar-xmark" style="font-size: 4rem; color: #ccc; margin-bottom: 20px;"></i>
-                    <p style="color: #666; font-size: 1.2rem;">Nenhuma atividade encontrada.</p>
-                </div>
-            `;
-            return;
-        }
-
-        eventList.innerHTML = atividades.map(atividade => {
-            const icone = getIconeEsporte(atividade.esporte);
-            const dataFormatada = formatarDataHora(atividade.data_hora);
-
-            return `
-                <article class="event-card">
-                    <div class="card-header">
-                        <i class="${icone} card-icon"></i>
-                        <h3>${atividade.titulo}</h3>
-                    </div>
-                    <div class="card-body">
-                        <p><i class="fa-solid fa-location-dot"></i> ${atividade.local}</p>
-                        <p><i class="fa-solid fa-calendar-days"></i> ${dataFormatada}</p>
-                        <p><i class="fa-solid fa-user"></i> Organizado por: ${atividade.criador_nome || 'Anônimo'}</p>
-                    </div>
-                    <div class="card-footer">
-                        <span class="vacancies">Vagas: ${atividade.vagas}</span>
-                    </div>
-                </article>
-            `;
-        }).join('');
+    if (atividades.length === 0) {
+        eventList.innerHTML = `
+            <div style="text-align: center; padding: 40px; grid-column: 1/-1;">
+                <i class="fa-solid fa-calendar-xmark" style="font-size: 4rem; color: #ccc; margin-bottom: 20px;"></i>
+                <p style="color: #666; font-size: 1.2rem;">Nenhuma atividade encontrada.</p>
+            </div>
+        `;
+        return;
     }
+
+    eventList.innerHTML = atividades.map(atividade => {
+        const icone = getIconeEsporte(atividade.esporte);
+        const dataFormatada = formatarDataHora(atividade.data_hora);
+
+        return `
+            <article class="event-card">
+                <div class="card-header">
+                    <i class="${icone} card-icon"></i>
+                    <h3>${atividade.titulo}</h3>
+                </div>
+                <div class="card-body">
+                    <p><i class="fa-solid fa-location-dot"></i> ${atividade.local}</p>
+                    <p><i class="fa-solid fa-calendar-days"></i> ${dataFormatada}</p>
+                    <p><i class="fa-solid fa-user"></i> Organizado por: ${atividade.criador_nome || 'Anônimo'}</p>
+                </div>
+                <div class="card-footer">
+                    <span class="vacancies">Vagas: ${atividade.vagas}</span>
+                    <a href="atividade.html?id=${atividade.id}" class="btn-details">Ver detalhes</a>
+                </div>
+            </article>
+        `;
+    }).join('');
+}
+
 
     function getIconeEsporte(esporte) {
         const icones = {
