@@ -9,6 +9,12 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     const eventList = document.querySelector('.event-list');
+    
+    // Verificação de segurança
+    if (!eventList) {
+        console.error('Elemento .event-list não encontrado na página');
+        return;
+    }
 
     async function carregarMinhasAtividades() {
         try {
@@ -39,20 +45,30 @@ document.addEventListener('DOMContentLoaded', () => {
             renderizarMinhasAtividades(atividades);
         } catch (error) {
             console.error('Erro:', error);
-            eventList.innerHTML = `
-                <div style="text-align: center; padding: 40px; grid-column: 1/-1;">
-                    <i class="fa-solid fa-exclamation-triangle" style="font-size: 3rem; color: #e76f51; margin-bottom: 20px;"></i>
-                    <p style="color: #e76f51; font-size: 1.1rem; margin-bottom: 10px;">Erro ao carregar suas atividades</p>
-                    <p style="color: #666; font-size: 0.9rem;">${error.message}</p>
-                    <button onclick="location.reload()" class="btn-submit" style="margin-top: 20px; width: auto; padding: 10px 20px;">
-                        Tentar Novamente
-                    </button>
-                </div>
-            `;
+            
+            // Verificação antes de atualizar innerHTML
+            if (eventList) {
+                eventList.innerHTML = `
+                    <div style="text-align: center; padding: 40px; grid-column: 1/-1;">
+                        <i class="fa-solid fa-exclamation-triangle" style="font-size: 3rem; color: #e76f51; margin-bottom: 20px;"></i>
+                        <p style="color: #e76f51; font-size: 1.1rem; margin-bottom: 10px;">Erro ao carregar suas atividades</p>
+                        <p style="color: #666; font-size: 0.9rem;">${error.message}</p>
+                        <button onclick="location.reload()" class="btn-submit" style="margin-top: 20px; width: auto; padding: 10px 20px;">
+                            Tentar Novamente
+                        </button>
+                    </div>
+                `;
+            }
         }
     }
 
     function renderizarMinhasAtividades(atividades) {
+        // Verificação de segurança
+        if (!eventList) {
+            console.error('Elemento .event-list não encontrado');
+            return;
+        }
+
         if (atividades.length === 0) {
             eventList.innerHTML = `
                 <div style="text-align: center; padding: 40px; grid-column: 1/-1;">
@@ -124,7 +140,7 @@ document.addEventListener('DOMContentLoaded', () => {
             `;
         }).join('');
         
-        // Adiciona estilos para os badges
+        // Adiciona estilos para os badges (se ainda não existirem)
         if (!document.getElementById('status-badge-styles')) {
             const style = document.createElement('style');
             style.id = 'status-badge-styles';
@@ -184,6 +200,7 @@ document.addEventListener('DOMContentLoaded', () => {
         return data.toLocaleDateString('pt-BR', opcoes);
     }
 
+    // Função global para deletar atividade
     window.deletarAtividade = async function(id) {
         if (!confirm('Tem certeza que deseja excluir esta atividade?\n\nTodos os participantes inscritos serão removidos.')) {
             return;
@@ -211,12 +228,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (card) {
                     card.style.opacity = '0';
                     card.style.transform = 'scale(0.9)';
+                    card.style.transition = 'all 0.3s ease';
                     setTimeout(() => carregarMinhasAtividades(), 300);
                 }
                 
                 // Feedback visual
                 const toast = document.createElement('div');
-                toast.textContent = '✅ Atividade excluída com sucesso!';
+                toast.textContent = 'Atividade excluída com sucesso!';
                 toast.style.cssText = `
                     position: fixed;
                     top: 20px;
@@ -236,11 +254,11 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         } catch (error) {
             console.error('Erro:', error);
-            alert('❌ ' + error.message);
+            alert('' + error.message);
         }
     };
 
-    // Adiciona animação
+    // Adiciona animação (se ainda não existe)
     if (!document.getElementById('toast-animation')) {
         const style = document.createElement('style');
         style.id = 'toast-animation';
@@ -259,6 +277,7 @@ document.addEventListener('DOMContentLoaded', () => {
         document.head.appendChild(style);
     }
 
+    // Logout
     const logoutButtons = document.querySelectorAll('.btn-logout');
     logoutButtons.forEach(btn => {
         btn.addEventListener('click', (e) => {
@@ -268,5 +287,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
+    // Inicia carregamento
     carregarMinhasAtividades();
 });

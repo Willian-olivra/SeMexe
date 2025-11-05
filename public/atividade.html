@@ -1,34 +1,55 @@
-<!-- public/atividade.html -->
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Detalhes da Atividade</title>
+  <title>Se Mexe - Detalhes da Atividade</title>
   <link rel="stylesheet" href="style.css" />
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+  <link rel="shortcut icon" href="logo.png" type="">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
 </head>
 <body>
   <header>
-        <nav class="container">
-            <a href="index.html" class="logo">Se Mexe <img src="logo.png" alt=""></a>
-            <ul id="nav-menu"></ul>
-        </nav>
-    </header>
+    <nav class="container">
+      <a href="index.html" class="logo">Se Mexe</a>
+      <ul id="nav-menu"></ul>
+    </nav>
+  </header>
+
   <main class="atividade-container">
-    <h1 id="titulo-atividade"></h1>
-    <p><strong>Local:</strong> <span id="local-atividade"></span></p>
-    <p><strong>Data:</strong> <span id="data-atividade"></span></p>
-    <button id="participar-btn">Participar da Atividade</button>
-    <div id="map" style="height: 300px; margin-top: 20px;"></div>
+    <a href="index.html" class="btn-back">
+      <i class="fa-solid fa-arrow-left"></i> Voltar para início
+    </a>
+
+    <h1 id="titulo-atividade">Carregando...</h1>
+
+    <!-- Informações da atividade serão inseridas aqui via JS -->
+    <div id="atividade-info-container"></div>
+
+    <!-- Botão de participação -->
+    <button id="participar-btn" disabled>
+      <i class="fa-solid fa-spinner fa-spin"></i> Carregando...
+    </button>
+
+    <!-- Lista de participantes -->
+    <div id="participantes-container"></div>
+
+    <!-- Mapa Google Maps -->
+    <div id="mapa-section" style="display: none;">
+      <h3><i class="fa-solid fa-map-location-dot"></i> Localização</h3>
+      <div id="map"></div>
+      <!-- Botões serão inseridos aqui via JS -->
+    </div>
   </main>
+
   <footer>
-    <div class="ft"><h4>Se Mexe</h4>
-        <p>&copy; 2025 Se Mexe. Todos os direitos reservados.</p>
-        </div>
+    <p>&copy; 2025 Se Mexe. Todos os direitos reservados.</p>
   </footer>
+
   <script src="js/utils.js"></script>
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="js/atividade.js"></script>
 </body>
 </html>

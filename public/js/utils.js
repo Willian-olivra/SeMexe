@@ -1,6 +1,3 @@
-// ===== UTILITÁRIOS GLOBAIS =====
-// Este arquivo contém funções que podem ser usadas em qualquer página
-
 /**
  * Verifica se o usuário está logado
  * @returns {boolean}
@@ -33,18 +30,14 @@ function getToken() {
     return localStorage.getItem('token');
 }
 
-/**
- * Faz logout do usuário
- */
+//Faz logout do usuário
 function fazerLogout(event) {
     if (event) event.preventDefault();
     localStorage.clear();
     window.location.href = 'index.html';
 }
 
-/**
- * Atualiza o menu de navegação baseado no estado de autenticação
- */
+// Atualiza o menu de navegação baseado no estado de autenticação
 function atualizarMenu() {
     const navMenu = document.getElementById('nav-menu');
     if (!navMenu) return;

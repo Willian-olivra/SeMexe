@@ -80,7 +80,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 const data = await res.json();
 
                 if (res.ok) {
-                    // 🔧 Corrigido: salva corretamente tanto data.user quanto data.usuario
                     const usuario = data.user || data.usuario;
                     if (!usuario || !data.token) {
                         throw new Error('Resposta inválida do servidor. Dados de login incompletos.');

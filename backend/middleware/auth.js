@@ -1,9 +1,6 @@
 const jwt = require('jsonwebtoken');
-
-/**
- * Middleware de autenticação JWT
- * Verifica se o token é válido e extrai o ID do usuário
- */
+ //Middleware de autenticação JWT
+ //Verifica se o token é válido e extrai o ID do usuário
 const authMiddleware = (req, res, next) => {
     // Pega o token do header Authorization
     // Formato esperado: "Bearer TOKEN_AQUI"

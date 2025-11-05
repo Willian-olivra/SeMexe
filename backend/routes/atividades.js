@@ -349,19 +349,38 @@ router.delete('/:id/sair', authMiddleware, async (req, res) => {
  */
 router.get('/:id/participantes', async (req, res) => {
   try {
+    const atividadeId = req.params.id;
+    
+    console.log(`Buscando participantes da atividade ${atividadeId}`);
+    
+    // Primeiro verifica se a atividade existe
+    const [atividade] = await pool.query(
+      'SELECT id FROM atividades WHERE id = ?',
+      [atividadeId]
+    );
+    
+    if (!atividade.length) {
+      console.log(`Atividade ${atividadeId} não encontrada`);
+      return res.status(404).json({ error: 'Atividade não encontrada' });
+    }
+    
+    // Busca os participantes
     const [participantes] = await pool.query(
       `SELECT 
         u.id,
         u.nome,
+        u.email,
         p.data_inscricao
        FROM participantes p
-       JOIN usuarios u ON p.usuario_id = u.id
+       INNER JOIN usuarios u ON p.usuario_id = u.id
        WHERE p.atividade_id = ?
        ORDER BY p.data_inscricao ASC`,
-      [req.params.id]
+      [atividadeId]
     );
     
-    res.json(participantes);
+    console.log(`${participantes.length} participante(s) encontrado(s)`);
+    
+    res.status(200).json(participantes);
   } catch (error) {
     console.error('Erro ao listar participantes:', error);
     res.status(500).json({ error: 'Erro ao listar participantes' });

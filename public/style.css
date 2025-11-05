@@ -263,6 +263,7 @@ nav a:hover {
     background-color: #d16144;
 }
 
+/* ========== PÁGINA DE ATIVIDADE INDIVIDUAL ========== */
 .atividade-container {
     max-width: 900px;
     margin: 40px auto;
@@ -362,6 +363,7 @@ nav a:hover {
     background-color: #d16144;
 }
 
+/* Lista de Participantes */
 .participantes-section {
     margin: 30px 0;
     padding: 20px;
@@ -405,14 +407,39 @@ nav a:hover {
     font-size: 0.85rem;
 }
 
-#map {
-    height: 350px;
+/* Mapa */
+#mapa-section {
     margin-top: 30px;
+    padding: 20px;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+}
+
+#mapa-section h3 {
+    color: #264653;
+    margin-bottom: 15px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+#map {
+    height: 400px;
+    width: 100%;
     border-radius: 8px;
     overflow: hidden;
     box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    z-index: 1;
 }
 
+/* Correção para Leaflet */
+.leaflet-container {
+    height: 100%;
+    width: 100%;
+    border-radius: 8px;
+}
+
+/* ========== FORMULÁRIOS ========== */
 .form-container {
     max-width: 500px;
     margin: 40px auto;
@@ -508,6 +535,7 @@ nav a:hover {
     background-color: #217a6f;
 }
 
+/* ========== FOOTER ========== */
 footer {
     background-color: #264653;
     color: #fff;
@@ -542,9 +570,6 @@ footer h4 {
 footer p {
     color: #f4f7f6;
     margin-bottom: 20px;
-}
-.ft {
-    text-align: center;
 }
 
 .form-group-inline {
@@ -670,4 +695,7 @@ footer input::placeholder, footer textarea::placeholder {
     .atividade-container h1 {
         font-size: 1.5rem;
     }
+}
+.ft {
+    text-align: center;
 }
