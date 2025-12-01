@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Se Mexe - Criar</title>
+    <link rel="shortcut icon" href="logo.png" type="">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'neon-blue': '#00E5FF',
+                        'neon-pink': '#FF007F',
+                        'dark-base': '#121212',
+                        'dark-surface': '#1E1E1E',
+                        'dark-highlight': '#2D2D2D',
+                    },
+                    fontFamily: { sans: ['Poppins', 'sans-serif'] }
+                }
+            }
+        }
+    </script>
+    <style>
+        #nav-menu a { color: #d1d5db; font-weight: 500; transition: color 0.3s ease; }
+        #nav-menu a:hover { color: #00E5FF; text-shadow: 0 0 8px rgba(0,229,255,0.5); }
+        .hamburger-toggle .line { transition: all 0.3s ease-in-out; }
+        .hamburger-toggle.active .line-1 { transform: translateY(8px) rotate(45deg); }
+        .hamburger-toggle.active .line-2 { opacity: 0; }
+        .hamburger-toggle.active .line-3 { transform: translateY(-8px) rotate(-45deg); }
+        ::-webkit-calendar-picker-indicator { filter: invert(1); cursor: pointer; }
+    </style>
+</head>
+<body class="bg-dark-base text-gray-200 font-sans min-h-screen flex flex-col selection:bg-neon-blue selection:text-black">
+
+    <header class="bg-dark-surface py-4 border-b border-gray-800 sticky top-0 z-50 shadow-lg">
+        <nav class="container mx-auto px-5 flex justify-between items-center relative">
+            <a href="index.html" class="text-2xl font-bold text-neon-blue italic flex items-center gap-2 hover:scale-105 transition-transform">
+                <i class="fa-solid fa-bolt"></i> Se Mexe
+            </a>
+            <button id="hamburger-btn" aria-label="Abrir menu" class="hamburger-toggle md:hidden flex flex-col gap-1.5 cursor-pointer z-50">
+                <span class="line line-1 block w-6 h-0.5 bg-neon-blue"></span>
+                <span class="line line-2 block w-6 h-0.5 bg-neon-blue"></span>
+                <span class="line line-3 block w-6 h-0.5 bg-neon-blue"></span>
+            </button>
+            <div id="nav-menu-wrapper" class="fixed inset-0 bg-dark-base/95 backdrop-blur-md flex flex-col items-center justify-center gap-8 text-xl transition-transform duration-300 translate-x-full md:translate-x-0 md:static md:bg-transparent md:flex-row md:gap-8 md:text-base md:h-auto border-l border-gray-800 md:border-none">
+                <ul id="nav-menu" class="flex flex-col md:flex-row gap-6 items-center mb-4 md:mb-0"></ul>
+            </div>
+        </nav>
+    </header>
+
+    <main class="container mx-auto px-5 py-10">
+        <div class="mb-6 max-w-lg mx-auto">
+            <a href="minhasAtividades.html" class="inline-flex items-center gap-2 text-neon-blue font-medium hover:text-white transition">
+                <i class="fa-solid fa-arrow-left"></i> Cancelar
+            </a>
+        </div>
+
+        <div class="max-w-lg mx-auto bg-dark-surface border border-gray-800 rounded-xl shadow-2xl p-8">
+            <h2 class="text-2xl font-bold text-white text-center mb-8">Criar Nova Atividade</h2>
+            
+            <form id="form-criar" class="space-y-5">
+                <div>
+                    <label for="sport" class="block text-gray-400 font-medium mb-2">Esporte</label>
+                    <select id="sport" name="sport" required class="w-full bg-dark-highlight border border-gray-700 text-white rounded-md p-3 focus:outline-none focus:border-neon-blue focus:ring-1 focus:ring-neon-blue transition">
+                        <option value="">Selecione...</option>
+                        <option value="Futebol">Futebol</option>
+                        <option value="Vôlei">Vôlei</option>
+                        <option value="Basquete">Basquete</option>
+                        <option value="Corrida">Corrida</option>
+                        <option value="Natação">Natação</option>
+                        <option value="Outro">Outro</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="title" class="block text-gray-400 font-medium mb-2">Título do Evento</label>
+                    <input type="text" id="title" name="title" placeholder="Ex: Futebol de Sábado" required class="w-full bg-dark-highlight border border-gray-700 text-white rounded-md p-3 focus:outline-none focus:border-neon-blue focus:ring-1 focus:ring-neon-blue transition placeholder-gray-600">
+                </div>
+                <div>
+                    <label for="location" class="block text-gray-400 font-medium mb-2">Local</label>
+                    <input type="text" id="location" name="location" placeholder="Ex: Parque da Baronesa" required class="w-full bg-dark-highlight border border-gray-700 text-white rounded-md p-3 focus:outline-none focus:border-neon-blue focus:ring-1 focus:ring-neon-blue transition placeholder-gray-600">
+                </div>
+                <div>
+                    <label for="datetime" class="block text-gray-400 font-medium mb-2">Data e Hora</label>
+                    <input type="datetime-local" id="datetime" name="datetime" required class="w-full bg-dark-highlight border border-gray-700 text-white rounded-md p-3 focus:outline-none focus:border-neon-blue focus:ring-1 focus:ring-neon-blue transition">
+                </div>
+                <div>
+                    <label for="vacancies" class="block text-gray-400 font-medium mb-2">Total de Vagas</label>
+                    <input type="number" id="vacancies" name="vacancies" min="2" placeholder="10" required class="w-full bg-dark-highlight border border-gray-700 text-white rounded-md p-3 focus:outline-none focus:border-neon-blue focus:ring-1 focus:ring-neon-blue transition placeholder-gray-600">
+                </div>
+
+                <div>
+                    <label class="block text-gray-400 font-medium mb-2">Quem pode ver?</label>
+                    <div class="grid grid-cols-2 gap-4">
+                        <label class="cursor-pointer">
+                            <input type="radio" name="visibility" value="public" class="peer sr-only" checked>
+                            <div class="bg-dark-highlight border border-gray-700 rounded-lg p-3 text-center peer-checked:border-neon-blue peer-checked:text-neon-blue peer-checked:bg-neon-blue/10 transition hover:bg-gray-800">
+                                <i class="fa-solid fa-globe text-xl mb-1"></i>
+                                <div class="text-sm font-bold">Público</div>
+                            </div>
+                        </label>
+
+                        <label class="cursor-pointer">
+                            <input type="radio" name="visibility" value="friends" class="peer sr-only">
+                            <div class="bg-dark-highlight border border-gray-700 rounded-lg p-3 text-center peer-checked:border-neon-pink peer-checked:text-neon-pink peer-checked:bg-neon-pink/10 transition hover:bg-gray-800">
+                                <i class="fa-solid fa-user-group text-xl mb-1"></i>
+                                <div class="text-sm font-bold">Só Amigos</div>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+                
+                <button type="submit" id="btn-publicar" class="w-full bg-neon-blue text-black font-bold text-lg py-3 rounded-md hover:bg-white hover:shadow-[0_0_15px_rgba(0,229,255,0.6)] transition shadow-lg mt-4 cursor-pointer">
+                    Publicar
+                </button>
+            </form>
+        </div>
+    </main>
+
+    <footer class="bg-black border-t border-gray-900 text-white py-8 mt-auto text-center">
+        <p class="text-gray-500 text-sm">&copy; 2025 Se Mexe. Direitos Reservados.</p>
+    </footer>
+    
+    <script src="js/utils.js"></script>
+    <script src="js/criarAtividade.js"></script>
+    
+    <script>
+        const btn = document.getElementById('hamburger-btn');
+        const menu = document.getElementById('nav-menu-wrapper');
+        if(btn && menu){
+            btn.addEventListener('click', () => {
+                btn.classList.toggle('active');
+                menu.classList.toggle('translate-x-full');
+                menu.classList.toggle('translate-x-0');
+            });
+        }
+    </script>
+</body>
+</html>

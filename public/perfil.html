@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Se Mexe - Meu Perfil</title>
+    <link rel="shortcut icon" href="logo.png" type="">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'neon-blue': '#00E5FF',
+                        'neon-pink': '#FF007F',
+                        'dark-base': '#121212',
+                        'dark-surface': '#1E1E1E',
+                        'dark-highlight': '#2D2D2D',
+                    },
+                    fontFamily: { sans: ['Poppins', 'sans-serif'] }
+                }
+            }
+        }
+    </script>
+    <style>
+        #nav-menu a { color: #d1d5db; font-weight: 500; transition: all 0.3s ease; }
+        #nav-menu a:hover { color: #00E5FF; text-shadow: 0 0 8px rgba(0, 229, 255, 0.5); }
+        button:focus { outline: none !important; }
+        .animate-fade-in { animation: fadeIn 0.5s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body class="bg-dark-base text-gray-200 font-sans min-h-screen flex flex-col selection:bg-neon-blue selection:text-black">
+
+    <header class="bg-dark-surface py-4 border-b border-gray-800 sticky top-0 z-50 shadow-lg">
+        <nav class="container mx-auto px-5 flex justify-between items-center relative">
+            <a href="index.html" class="text-2xl font-bold text-neon-blue italic flex items-center gap-2 hover:scale-105 transition-transform">
+                <i class="fa-solid fa-bolt"></i> Se Mexe
+            </a>
+            
+            <button id="hamburger-btn" aria-label="Abrir menu principal" class="hamburger-toggle md:hidden flex flex-col gap-1.5 cursor-pointer z-50">
+                <span class="line line-1 block w-6 h-0.5 bg-neon-blue"></span>
+                <span class="line line-2 block w-6 h-0.5 bg-neon-blue"></span>
+                <span class="line line-3 block w-6 h-0.5 bg-neon-blue"></span>
+            </button>
+
+            <div id="nav-menu-wrapper" class="fixed inset-0 bg-dark-base/95 backdrop-blur-md flex flex-col items-center justify-center gap-8 text-xl transition-transform duration-300 translate-x-full md:translate-x-0 md:static md:bg-transparent md:flex-row md:gap-8 md:text-base md:h-auto border-l border-gray-800 md:border-none">
+                <ul id="nav-menu" class="flex flex-col md:flex-row gap-6 items-center"></ul>
+            </div>
+        </nav>
+    </header>
+
+    <main class="container mx-auto px-5 py-10 max-w-4xl flex-grow">
+        
+        <div class="bg-dark-surface border border-gray-800 rounded-xl p-8 mb-8 flex flex-col md:flex-row items-center gap-6 shadow-lg relative overflow-hidden">
+            <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-neon-blue to-neon-pink"></div>
+            
+            <div class="w-24 h-24 rounded-full bg-gradient-to-br from-gray-700 to-black border-2 border-neon-blue flex items-center justify-center text-4xl text-white font-bold shadow-[0_0_15px_rgba(0,229,255,0.3)]" id="avatar-letra">
+                ?
+            </div>
+            
+            <div class="text-center md:text-left flex-1">
+                <h1 class="text-3xl font-bold text-white mb-1" id="perfil-nome">Carregando...</h1>
+                <p class="text-gray-400 text-sm mb-4" id="perfil-email">...</p>
+                <div class="flex gap-4 justify-center md:justify-start">
+                    <div class="bg-dark-highlight px-4 py-2 rounded-lg border border-gray-700 text-center min-w-[100px]">
+                        <span class="block text-xl font-bold text-neon-blue" id="contador-amigos">0</span>
+                        <span class="text-xs text-gray-400 uppercase tracking-wider">Amigos</span>
+                    </div>
+                    <div class="bg-dark-highlight px-4 py-2 rounded-lg border border-gray-700 text-center min-w-[100px]">
+                        <span class="block text-xl font-bold text-neon-pink" id="contador-atividades">0</span>
+                        <span class="text-xs text-gray-400 uppercase tracking-wider">Atividades</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-dark-surface border border-gray-800 rounded-xl shadow-lg overflow-hidden min-h-[400px]">
+            <div class="flex border-b border-gray-800 overflow-x-auto">
+                <button id="tab-meus-amigos" class="flex-1 py-4 px-2 min-w-[120px] text-center font-bold text-neon-blue border-b-2 border-neon-blue bg-dark-highlight/50 transition duration-300">
+                    <i class="fa-solid fa-user-group mr-2"></i> Amigos
+                </button>
+                <button id="tab-buscar" class="flex-1 py-4 px-2 min-w-[120px] text-center font-bold text-gray-400 hover:text-white transition duration-300 hover:bg-dark-highlight/20">
+                    <i class="fa-solid fa-magnifying-glass mr-2"></i> Buscar
+                </button>
+                <button id="tab-solicitacoes" class="flex-1 py-4 px-2 min-w-[120px] text-center font-bold text-gray-400 hover:text-white transition duration-300 hover:bg-dark-highlight/20 relative">
+                    <i class="fa-solid fa-bell mr-2"></i> Solicitações
+                    <span id="badge-solicitacoes" class="hidden absolute top-3 right-4 w-2.5 h-2.5 bg-neon-pink rounded-full animate-pulse shadow-[0_0_8px_#ff007f]"></span>
+                </button>
+            </div>
+
+            <div id="view-meus-amigos" class="p-6">
+                <div id="lista-amigos" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <p class="col-span-full text-center text-gray-500 py-10">Carregando amigos...</p>
+                </div>
+            </div>
+
+            <div id="view-buscar" class="p-6 hidden">
+                <div class="relative mb-6">
+                    <input type="text" id="input-busca" placeholder="Digite o nome para buscar..." class="w-full bg-dark-highlight border border-gray-700 text-white rounded-full py-3 px-5 pl-12 focus:outline-none focus:border-neon-blue focus:ring-1 focus:ring-neon-blue transition placeholder-gray-500">
+                    <i class="fa-solid fa-search absolute left-4 top-3.5 text-gray-400"></i>
+                </div>
+                <div id="resultados-busca" class="space-y-3">
+                    <p class="text-gray-500 text-center text-sm">Digite algo para pesquisar...</p>
+                </div>
+            </div>
+
+            <div id="view-solicitacoes" class="p-6 hidden">
+                <h3 class="text-white text-lg font-bold mb-4 flex items-center gap-2">
+                    <i class="fa-solid fa-envelope-open-text text-neon-pink"></i> Pedidos Pendentes
+                </h3>
+                <div id="lista-solicitacoes" class="space-y-3">
+                    <p class="text-gray-500 text-center py-6">Carregando...</p>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <footer class="bg-black border-t border-gray-900 text-white py-8 mt-auto">
+        <div class="container mx-auto px-5 flex flex-col md:flex-row justify-between items-center gap-6">
+            <div class="text-center md:text-left w-full md:w-1/3">
+                <h4 class="text-xl text-white font-bold italic mb-1 flex items-center justify-center md:justify-start gap-2">
+                    <i class="fa-solid fa-bolt text-neon-blue"></i> Se Mexe
+                </h4>
+                <p class="text-gray-500 text-sm">&copy; 2025 Se Mexe.</p>
+            </div>
+            <div class="text-center w-full md:w-1/3 flex justify-center">
+                <a href="#" class="inline-flex items-center gap-3 bg-dark-highlight border border-gray-700 hover:border-neon-blue text-white px-6 py-2 rounded-full transition-all duration-300 group shadow-lg hover:shadow-neon-blue/20">
+                    <i class="fa-brands fa-android text-gray-400 group-hover:text-neon-blue transition"></i>
+                    <span class="text-sm font-medium text-gray-300 group-hover:text-white">Baixar App</span>
+                    <i class="fa-brands fa-apple text-gray-400 group-hover:text-neon-blue transition"></i>
+                </a>
+            </div>
+            <div class="flex gap-6 text-2xl w-full md:w-1/3 justify-center md:justify-end">
+                <a href="#" class="text-gray-400 hover:text-neon-blue transition hover:-translate-y-1"><i class="fa-brands fa-facebook-f"></i></a>
+                <a href="#" class="text-gray-400 hover:text-neon-blue transition hover:-translate-y-1"><i class="fa-brands fa-instagram"></i></a>
+                <a href="#" class="text-gray-400 hover:text-neon-blue transition hover:-translate-y-1"><i class="fa-brands fa-twitter"></i></a>
+            </div>
+        </div>
+    </footer>
+
+    <script src="js/utils.js"></script>
+    <script src="js/perfil.js"></script>
+    
+    <script>
+        const btn = document.getElementById('hamburger-btn');
+        const menu = document.getElementById('nav-menu-wrapper');
+        if(btn && menu){
+            btn.addEventListener('click', () => {
+                btn.classList.toggle('active');
+                menu.classList.toggle('translate-x-full');
+                menu.classList.toggle('translate-x-0');
+            });
+        }
+
+        // Lógica de Troca de Abas
+        const tabs = {
+            amigos: document.getElementById('tab-meus-amigos'),
+            buscar: document.getElementById('tab-buscar'),
+            solicitacoes: document.getElementById('tab-solicitacoes')
+        };
+        const views = {
+            amigos: document.getElementById('view-meus-amigos'),
+            buscar: document.getElementById('view-buscar'),
+            solicitacoes: document.getElementById('view-solicitacoes')
+        };
+
+        function switchTab(activeKey) {
+            // Esconde tudo e reseta estilos
+            Object.keys(views).forEach(key => views[key].classList.add('hidden'));
+            Object.keys(tabs).forEach(key => {
+                tabs[key].classList.remove('text-neon-blue', 'border-b-2', 'border-neon-blue', 'bg-dark-highlight/50');
+                tabs[key].classList.add('text-gray-400');
+            });
+
+            // Ativa o selecionado
+            views[activeKey].classList.remove('hidden');
+            tabs[activeKey].classList.add('text-neon-blue', 'border-b-2', 'border-neon-blue', 'bg-dark-highlight/50');
+            tabs[activeKey].classList.remove('text-gray-400');
+        }
+
+        tabs.amigos.addEventListener('click', () => switchTab('amigos'));
+        tabs.buscar.addEventListener('click', () => switchTab('buscar'));
+        tabs.solicitacoes.addEventListener('click', () => switchTab('solicitacoes'));
+    </script>
+</body>
+</html>

@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Se Mexe - Perfil de Usuário</title>
+    <link rel="shortcut icon" href="logo.png" type="">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'neon-blue': '#00E5FF',
+                        'neon-pink': '#FF007F',
+                        'dark-base': '#121212',
+                        'dark-surface': '#1E1E1E',
+                        'dark-highlight': '#2D2D2D',
+                    },
+                    fontFamily: { sans: ['Poppins', 'sans-serif'] }
+                }
+            }
+        }
+    </script>
+    <style>
+        #nav-menu a { color: #d1d5db; font-weight: 500; transition: all 0.3s ease; }
+        #nav-menu a:hover { color: #00E5FF; text-shadow: 0 0 8px rgba(0, 229, 255, 0.5); }
+        button:focus { outline: none !important; }
+        /* Scrollbar fina para o chat */
+        #chat-messages::-webkit-scrollbar { width: 6px; }
+        #chat-messages::-webkit-scrollbar-thumb { background-color: #333; border-radius: 3px; }
+    </style>
+</head>
+<body class="bg-dark-base text-gray-200 font-sans min-h-screen flex flex-col selection:bg-neon-blue selection:text-black">
+
+    <header class="bg-dark-surface py-4 border-b border-gray-800 sticky top-0 z-50 shadow-lg">
+        <nav class="container mx-auto px-5 flex justify-between items-center relative">
+            <a href="index.html" class="text-2xl font-bold text-neon-blue italic flex items-center gap-2 hover:scale-105 transition-transform">
+                <i class="fa-solid fa-bolt"></i> Se Mexe
+            </a>
+            <button id="hamburger-btn" aria-label="Abrir menu" class="hamburger-toggle md:hidden flex flex-col gap-1.5 cursor-pointer z-50">
+                <span class="line line-1 block w-6 h-0.5 bg-neon-blue"></span>
+                <span class="line line-2 block w-6 h-0.5 bg-neon-blue"></span>
+                <span class="line line-3 block w-6 h-0.5 bg-neon-blue"></span>
+            </button>
+            <div id="nav-menu-wrapper" class="fixed inset-0 bg-dark-base/95 backdrop-blur-md flex flex-col items-center justify-center gap-8 text-xl transition-transform duration-300 translate-x-full md:translate-x-0 md:static md:bg-transparent md:flex-row md:gap-8 md:text-base md:h-auto border-l border-gray-800 md:border-none">
+                <ul id="nav-menu" class="flex flex-col md:flex-row gap-6 items-center"></ul>
+            </div>
+        </nav>
+    </header>
+
+    <main class="container mx-auto px-5 py-10 max-w-4xl flex-grow">
+        
+        <div class="bg-dark-surface border border-gray-800 rounded-xl p-8 mb-8 flex flex-col md:flex-row items-center gap-6 shadow-lg relative overflow-hidden">
+            <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-neon-blue to-gray-800"></div>
+            
+            <div class="w-24 h-24 rounded-full bg-gray-700 border-2 border-gray-500 flex items-center justify-center text-4xl text-white font-bold shadow-inner" id="avatar-letra">
+                ?
+            </div>
+            
+            <div class="text-center md:text-left flex-1">
+                <h1 class="text-3xl font-bold text-white mb-1" id="perfil-nome">Carregando...</h1>
+                <p class="text-gray-400 text-sm mb-4" id="perfil-email">...</p>
+                
+                <div id="friend-actions" class="hidden mt-2 flex flex-wrap justify-center md:justify-start gap-3">
+                    
+                    <button id="btn-add" class="bg-neon-blue text-black px-6 py-2 rounded-full font-bold hover:bg-white transition shadow-lg shadow-neon-blue/20 flex items-center gap-2 hidden">
+                        <i class="fa-solid fa-user-plus"></i> Adicionar aos Amigos
+                    </button>
+
+                    <button id="btn-pending" class="bg-gray-700 text-gray-300 px-6 py-2 rounded-full font-bold cursor-default flex items-center gap-2 hidden opacity-70">
+                        <i class="fa-solid fa-clock"></i> Solicitação Enviada
+                    </button>
+
+                    <div id="area-amigo" class="hidden items-center gap-3">
+                        <span class="bg-green-500/20 text-green-400 border border-green-500 px-4 py-1.5 rounded-full font-bold flex items-center gap-2 select-none">
+                            <i class="fa-solid fa-check"></i> Amigos
+                        </span>
+                        
+                        <button id="btn-mensagem" class="bg-dark-highlight border border-gray-600 text-white px-4 py-2 rounded-full font-bold hover:border-neon-blue hover:text-neon-blue transition flex items-center gap-2">
+                            <i class="fa-regular fa-comment-dots"></i> Mensagem
+                        </button>
+
+                        <button id="btn-remove" class="bg-dark-highlight border border-gray-600 text-gray-400 hover:text-neon-pink hover:border-neon-pink px-3 py-2 rounded-full transition" title="Desfazer amizade">
+                            <i class="fa-solid fa-user-xmark"></i>
+                        </button>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-dark-surface border border-gray-800 rounded-xl shadow-lg p-6 min-h-[300px]">
+            <h3 class="text-white text-xl font-bold mb-6 flex items-center gap-2">
+                <i class="fa-solid fa-person-running text-neon-blue"></i> Atividades Públicas
+            </h3>
+            
+            <div id="lista-atividades" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <p class="col-span-full text-center text-gray-500 py-10">Carregando atividades...</p>
+            </div>
+        </div>
+
+    </main>
+
+    <div id="chat-window" class="fixed bottom-0 right-5 w-80 bg-dark-surface border border-gray-700 rounded-t-xl shadow-2xl hidden flex-col z-50" style="height: 400px;">
+        <div class="bg-dark-highlight p-3 rounded-t-xl border-b border-gray-700 flex justify-between items-center cursor-pointer" id="chat-header">
+            <div class="flex items-center gap-2">
+                <div class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                <span class="font-bold text-white text-sm truncate max-w-[150px]" id="chat-amigo-nome">Nome</span>
+            </div>
+            <button id="chat-close" class="text-gray-400 hover:text-neon-pink"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+
+        <div id="chat-messages" class="flex-1 p-4 overflow-y-auto space-y-3 bg-[#0a0a0a]">
+            </div>
+
+        <div class="p-3 border-t border-gray-700 bg-dark-highlight flex gap-2">
+            <input type="text" id="chat-input" placeholder="Digite..." class="flex-1 bg-dark-base text-white px-3 py-2 rounded-full focus:outline-none focus:border-neon-blue border border-transparent text-sm transition">
+            <button id="chat-send" class="text-neon-blue hover:text-white px-2"><i class="fa-solid fa-paper-plane"></i></button>
+        </div>
+    </div>
+
+    <footer class="bg-black border-t border-gray-900 text-white py-8 mt-auto text-center">
+        <p class="text-gray-500 text-sm">&copy; 2025 Se Mexe. Direitos Reservados.</p>
+    </footer>
+
+    <script src="js/utils.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="js/perfilUsuario.js"></script> 
+    
+    <script>
+        const btn = document.getElementById('hamburger-btn');
+        const menu = document.getElementById('nav-menu-wrapper');
+        if(btn && menu){
+            btn.addEventListener('click', () => {
+                btn.classList.toggle('active');
+                menu.classList.toggle('translate-x-full');
+                menu.classList.toggle('translate-x-0');
+            });
+        }
+    </script>
+</body>
+</html>
