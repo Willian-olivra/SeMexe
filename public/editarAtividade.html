@@ -104,6 +104,27 @@
                     <input type="number" id="vacancies" name="vacancies" min="2" required class="w-full bg-dark-highlight border border-gray-700 text-white rounded-md p-3 focus:outline-none focus:border-neon-blue focus:ring-1 focus:ring-neon-blue transition">
                 </div>
                 
+                <div>
+                    <label class="block text-gray-400 font-medium mb-2">Quem pode ver?</label>
+                    <div class="grid grid-cols-2 gap-4">
+                        <label class="cursor-pointer">
+                            <input type="radio" name="visibility" value="public" id="vis-public" class="peer sr-only">
+                            <div class="bg-dark-highlight border border-gray-700 rounded-lg p-3 text-center peer-checked:border-neon-blue peer-checked:text-neon-blue peer-checked:bg-neon-blue/10 transition hover:bg-gray-800">
+                                <i class="fa-solid fa-globe text-xl mb-1"></i>
+                                <div class="text-sm font-bold">Público</div>
+                            </div>
+                        </label>
+
+                        <label class="cursor-pointer">
+                            <input type="radio" name="visibility" value="friends" id="vis-friends" class="peer sr-only">
+                            <div class="bg-dark-highlight border border-gray-700 rounded-lg p-3 text-center peer-checked:border-neon-pink peer-checked:text-neon-pink peer-checked:bg-neon-pink/10 transition hover:bg-gray-800">
+                                <i class="fa-solid fa-user-group text-xl mb-1"></i>
+                                <div class="text-sm font-bold">Só Amigos</div>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
                 <div class="flex gap-4 pt-4">
                     <a href="minhasAtividades.html" class="w-1/3 bg-transparent border border-gray-600 text-gray-400 font-bold text-lg py-3 rounded-md hover:bg-gray-800 hover:text-white transition text-center">
                         Cancelar

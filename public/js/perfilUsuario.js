@@ -28,13 +28,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     const chatWindow = document.getElementById('chat-window');
     const chatMessages = document.getElementById('chat-messages');
     const chatInput = document.getElementById('chat-input');
-    const btnCloseChat = document.getElementById('chat-close'); // Botão X
+    const btnCloseChat = document.getElementById('chat-close');
 
-    // --- CORREÇÃO: LÓGICA DE FECHAR O CHAT (GLOBAL) ---
     if (btnCloseChat) {
         btnCloseChat.addEventListener('click', () => {
             chatWindow.classList.add('hidden');
-            chatWindow.style.display = 'none'; // Garante que suma
+            chatWindow.style.display = 'none';
         });
     }
 
@@ -47,7 +46,18 @@ document.addEventListener('DOMContentLoaded', async () => {
         
         document.getElementById('perfil-nome').textContent = user.nome;
         document.getElementById('perfil-email').textContent = user.email;
-        document.getElementById('avatar-letra').textContent = user.nome.charAt(0).toUpperCase();
+
+        // --- CORREÇÃO DO AVATAR AQUI ---
+        const avatarEl = document.getElementById('avatar-letra');
+        if (user.avatar && user.avatar.includes('fa-')) {
+            // Se tiver ícone, limpa o texto e insere o ícone
+            avatarEl.textContent = '';
+            avatarEl.innerHTML = `<i class="${user.avatar}"></i>`;
+        } else {
+            // Se não, usa a letra inicial
+            avatarEl.textContent = user.nome.charAt(0).toUpperCase();
+        }
+        // -------------------------------
 
         // Se estiver logado, verifica o status da amizade
         if (token) {
@@ -102,12 +112,10 @@ document.addEventListener('DOMContentLoaded', async () => {
                 areaAmigo.classList.remove('hidden');
                 areaAmigo.style.display = 'flex';
                 
-                // Configura remover
                 const novoBtnRemove = btnRemove.cloneNode(true);
                 btnRemove.parentNode.replaceChild(novoBtnRemove, btnRemove);
                 novoBtnRemove.onclick = () => removerAmizade(amigoId, document.getElementById('perfil-nome').textContent);
                 
-                // Configura botão de mensagem
                 const novoBtnMsg = btnMsg.cloneNode(true);
                 btnMsg.parentNode.replaceChild(novoBtnMsg, btnMsg);
                 novoBtnMsg.onclick = () => abrirChat(amigoId, document.getElementById('perfil-nome').textContent);
@@ -175,7 +183,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     function abrirChat(amigoId, nomeAmigo) {
         chatWindow.classList.remove('hidden');
-        chatWindow.style.display = 'flex'; // Garante flex
+        chatWindow.style.display = 'flex';
         document.getElementById('chat-amigo-nome').textContent = nomeAmigo;
         
         if (!socket) {
@@ -240,8 +248,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         chatMessages.appendChild(div);
         chatMessages.scrollTop = chatMessages.scrollHeight;
     }
-
-    // --- RENDERIZAÇÃO DE ATIVIDADES ---
 
     function renderizarAtividades(atividades) {
         const container = document.getElementById('lista-atividades');

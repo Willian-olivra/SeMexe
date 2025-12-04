@@ -64,7 +64,12 @@
             
             <div class="text-center md:text-left flex-1">
                 <h1 class="text-3xl font-bold text-white mb-1" id="perfil-nome">Carregando...</h1>
-                <p class="text-gray-400 text-sm mb-4" id="perfil-email">...</p>
+                <p class="text-gray-400 text-sm mb-2" id="perfil-email">...</p>
+                
+                <button onclick="abrirModalEditar()" class="mb-4 bg-transparent border border-gray-600 text-gray-400 px-3 py-1 rounded text-xs font-bold hover:text-white hover:border-white transition inline-flex items-center gap-2 mx-auto md:mx-0">
+                    <i class="fa-solid fa-pen"></i> Editar Perfil
+                </button>
+
                 <div class="flex gap-4 justify-center md:justify-start">
                     <div class="bg-dark-highlight px-4 py-2 rounded-lg border border-gray-700 text-center min-w-[100px]">
                         <span class="block text-xl font-bold text-neon-blue" id="contador-amigos">0</span>
@@ -142,6 +147,72 @@
             </div>
         </div>
     </footer>
+
+    <div id="modal-editar-perfil" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-[100] hidden flex items-center justify-center p-4 opacity-0 transition-opacity duration-300">
+        <div class="bg-dark-surface border border-gray-700 rounded-xl shadow-2xl p-6 w-full max-w-md transform scale-95 transition-transform duration-300 relative">
+            
+            <h3 class="text-xl font-bold text-white mb-4 border-b border-gray-800 pb-2 flex items-center gap-2">
+                <i class="fa-solid fa-user-pen text-neon-blue"></i> Editar Perfil
+            </h3>
+            
+            <form id="form-editar-perfil" class="space-y-4">
+                <div>
+                    <label class="block text-gray-400 text-sm font-medium mb-1">Seu Nome</label>
+                    <input type="text" id="edit-nome" class="w-full bg-dark-highlight border border-gray-700 text-white rounded p-3 focus:border-neon-blue outline-none transition" required>
+                </div>
+
+                <div>
+                    <label class="block text-gray-400 text-sm font-medium mb-2">Escolha seu Avatar</label>
+                    <div class="grid grid-cols-4 gap-3">
+                        <label class="cursor-pointer group">
+                            <input type="radio" name="avatar-selecionado" value="fa-solid fa-user-astronaut" class="peer sr-only">
+                            <div class="w-12 h-12 rounded-full bg-dark-base border-2 border-gray-700 flex items-center justify-center text-gray-400 peer-checked:border-neon-blue peer-checked:text-neon-blue peer-checked:bg-neon-blue/10 hover:border-gray-500 transition"><i class="fa-solid fa-user-astronaut text-xl"></i></div>
+                        </label>
+
+                        <label class="cursor-pointer group">
+                            <input type="radio" name="avatar-selecionado" value="fa-solid fa-user-ninja" class="peer sr-only">
+                            <div class="w-12 h-12 rounded-full bg-dark-base border-2 border-gray-700 flex items-center justify-center text-gray-400 peer-checked:border-neon-blue peer-checked:text-neon-blue peer-checked:bg-neon-blue/10 hover:border-gray-500 transition"><i class="fa-solid fa-user-ninja text-xl"></i></div>
+                        </label>
+
+                        <label class="cursor-pointer group">
+                            <input type="radio" name="avatar-selecionado" value="fa-solid fa-ghost" class="peer sr-only">
+                            <div class="w-12 h-12 rounded-full bg-dark-base border-2 border-gray-700 flex items-center justify-center text-gray-400 peer-checked:border-neon-blue peer-checked:text-neon-blue peer-checked:bg-neon-blue/10 hover:border-gray-500 transition"><i class="fa-solid fa-ghost text-xl"></i></div>
+                        </label>
+
+                        <label class="cursor-pointer group">
+                            <input type="radio" name="avatar-selecionado" value="fa-solid fa-robot" class="peer sr-only">
+                            <div class="w-12 h-12 rounded-full bg-dark-base border-2 border-gray-700 flex items-center justify-center text-gray-400 peer-checked:border-neon-blue peer-checked:text-neon-blue peer-checked:bg-neon-blue/10 hover:border-gray-500 transition"><i class="fa-solid fa-robot text-xl"></i></div>
+                        </label>
+                        
+                        <label class="cursor-pointer group">
+                            <input type="radio" name="avatar-selecionado" value="fa-solid fa-cat" class="peer sr-only">
+                            <div class="w-12 h-12 rounded-full bg-dark-base border-2 border-gray-700 flex items-center justify-center text-gray-400 peer-checked:border-neon-blue peer-checked:text-neon-blue peer-checked:bg-neon-blue/10 hover:border-gray-500 transition"><i class="fa-solid fa-cat text-xl"></i></div>
+                        </label>
+                        
+                        <label class="cursor-pointer group">
+                            <input type="radio" name="avatar-selecionado" value="fa-solid fa-dog" class="peer sr-only">
+                            <div class="w-12 h-12 rounded-full bg-dark-base border-2 border-gray-700 flex items-center justify-center text-gray-400 peer-checked:border-neon-blue peer-checked:text-neon-blue peer-checked:bg-neon-blue/10 hover:border-gray-500 transition"><i class="fa-solid fa-dog text-xl"></i></div>
+                        </label>
+
+                        <label class="cursor-pointer group">
+                            <input type="radio" name="avatar-selecionado" value="fa-solid fa-dragon" class="peer sr-only">
+                            <div class="w-12 h-12 rounded-full bg-dark-base border-2 border-gray-700 flex items-center justify-center text-gray-400 peer-checked:border-neon-blue peer-checked:text-neon-blue peer-checked:bg-neon-blue/10 hover:border-gray-500 transition"><i class="fa-solid fa-dragon text-xl"></i></div>
+                        </label>
+
+                        <label class="cursor-pointer group">
+                            <input type="radio" name="avatar-selecionado" value="fa-solid fa-user-secret" class="peer sr-only">
+                            <div class="w-12 h-12 rounded-full bg-dark-base border-2 border-gray-700 flex items-center justify-center text-gray-400 peer-checked:border-neon-blue peer-checked:text-neon-blue peer-checked:bg-neon-blue/10 hover:border-gray-500 transition"><i class="fa-solid fa-user-secret text-xl"></i></div>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="flex gap-3 pt-4">
+                    <button type="button" onclick="fecharModalEditar()" class="flex-1 bg-transparent border border-gray-600 text-gray-300 py-2 rounded hover:bg-gray-800 transition font-medium">Cancelar</button>
+                    <button type="submit" id="btn-salvar-perfil" class="flex-1 bg-neon-blue text-black font-bold py-2 rounded hover:bg-white transition shadow-lg">Salvar</button>
+                </div>
+            </form>
+        </div>
+    </div>
 
     <script src="js/utils.js"></script>
     <script src="js/perfil.js"></script>

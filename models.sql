@@ -61,3 +61,5 @@ CREATE TABLE IF NOT EXISTS mensagens (
     FOREIGN KEY (remetente_id) REFERENCES usuarios(id) ON DELETE CASCADE,
     FOREIGN KEY (destinatario_id) REFERENCES usuarios(id) ON DELETE CASCADE
 );
+
+ALTER TABLE usuarios ADD COLUMN avatar VARCHAR(50) DEFAULT 'fa-solid fa-user';

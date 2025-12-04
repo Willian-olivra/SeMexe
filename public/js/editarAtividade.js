@@ -37,10 +37,17 @@ document.addEventListener('DOMContentLoaded', async () => {
         document.getElementById('location').value = atividade.local;
         document.getElementById('vacancies').value = atividade.vagas;
 
+        // Preenche a visibilidade
+        if (atividade.visibilidade === 'friends') {
+            document.getElementById('vis-friends').checked = true;
+        } else {
+            document.getElementById('vis-public').checked = true;
+        }
+
         // Formata data para o input datetime-local (YYYY-MM-DDTHH:MM)
         if (atividade.data_hora) {
             const date = new Date(atividade.data_hora);
-            date.setMinutes(date.getMinutes() - date.getTimezoneOffset()); // Ajuste fuso
+            date.setMinutes(date.getMinutes() - date.getTimezoneOffset()); 
             document.getElementById('datetime').value = date.toISOString().slice(0, 16);
         }
 
@@ -68,7 +75,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                 titulo: document.getElementById('title').value,
                 local: document.getElementById('location').value,
                 data_hora: document.getElementById('datetime').value,
-                vagas: parseInt(document.getElementById('vacancies').value)
+                vagas: parseInt(document.getElementById('vacancies').value),
+                // Captura visibilidade
+                visibilidade: document.querySelector('input[name="visibility"]:checked').value
             };
 
             // Valida data futura
@@ -79,7 +88,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             // Envia atualização (PUT)
             const response = await fetch(`/api/atividades/${id}`, {
-                method: 'PUT', // ou PATCH dependendo do seu backend
+                method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${token}`

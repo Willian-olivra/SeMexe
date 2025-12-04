@@ -1,5 +1,5 @@
 document.addEventListener("DOMContentLoaded", async () => {
-    atualizarMenu();
+    if (typeof atualizarMenu === 'function') atualizarMenu();
     const params = new URLSearchParams(window.location.search);
     const id = params.get("id");
   
@@ -115,7 +115,6 @@ function configurarBotaoParticipar(btn, atividadeId, token, atividade) {
     btn.parentNode.replaceChild(novoBtn, btn);
 
     novoBtn.addEventListener('click', async () => {
-        // USA O NOVO MODAL
         const confirmado = await showConfirmModal(`Confirmar inscrição em "${atividade.titulo}"?`, 'Sim, Participar');
         if (!confirmado) return;
         
@@ -144,7 +143,6 @@ function configurarBotaoParticipar(btn, atividadeId, token, atividade) {
 }
 
 async function cancelarInscricao(atividadeId, token) {
-    // USA O NOVO MODAL
     const confirmado = await showConfirmModal('Deseja cancelar sua inscrição? 😢', 'Sim, Cancelar');
     if (!confirmado) return;
     
@@ -206,7 +204,8 @@ function renderizarMapa(atividade) {
         ? `${atividade.latitude},${atividade.longitude}`
         : encodeURIComponent(`${atividade.local}, Pelotas, RS, Brasil`);
     
-    mapDiv.innerHTML = `<iframe width="100%" height="100%" frameborder="0" style="border:0; width: 100%; height: 100%; min-height: 400px; border-radius: 0.5rem; filter: invert(90%) hue-rotate(180deg) contrast(90%);" src="https://maps.google.com/maps?q=${query}&t=&z=15&ie=UTF8&iwloc=&output=embed" allowfullscreen loading="lazy"></iframe>`;
+    // URL PADRÃO E VIVIDA (sem estilos estranhos)
+    mapDiv.innerHTML = `<iframe width="100%" height="100%" frameborder="0" style="border:0; width: 100%; height: 100%; min-height: 400px; border-radius: 0.5rem;" src="https://maps.google.com/maps?q=${query}&t=m&z=15&output=embed&iwloc=near" allowfullscreen loading="lazy"></iframe>`;
 }
 
 function getUsuarioLogado() {
