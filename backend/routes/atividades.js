@@ -16,12 +16,10 @@ const authMiddleware = (req, res, next) => {
     });
 };
 
-// NOVA ROTA: Listar atividades de um usuário específico (Perfil Público)
+// Listar atividades de um usuário específico (Perfil Público)
 router.get('/usuario/:id', async (req, res) => {
     try {
         const userId = req.params.id;
-        
-        // Busca apenas atividades PÚBLICAS desse usuário
         const [rows] = await pool.query(`
             SELECT a.*, 
             (SELECT COUNT(*) FROM participantes p WHERE p.atividade_id = a.id) as participantes_count
@@ -123,16 +121,17 @@ router.post('/', authMiddleware, async (req, res) => {
     } catch (error) { res.status(500).json({ error: 'Erro ao criar.' }); }
 });
 
-// PUT /api/atividades/:id
+// PUT /api/atividades/:id (ROTA ATUALIZADA)
 router.put('/:id', authMiddleware, async (req, res) => {
     const { id } = req.params;
-    const { esporte, titulo, local, data_hora, vagas } = req.body;
+    const { esporte, titulo, local, data_hora, vagas, visibilidade } = req.body;
     try {
         const [check] = await pool.query('SELECT * FROM atividades WHERE id = ? AND id_usuario = ?', [id, req.userId]);
         if (!check.length) return res.status(404).json({ error: 'Não encontrada ou sem permissão.' });
         
-        await pool.query('UPDATE atividades SET esporte=?, titulo=?, local=?, data_hora=?, vagas=? WHERE id=?', 
-            [esporte, titulo, local, data_hora, vagas, id]);
+        // Atualizado para incluir visibilidade
+        await pool.query('UPDATE atividades SET esporte=?, titulo=?, local=?, data_hora=?, vagas=?, visibilidade=? WHERE id=?', 
+            [esporte, titulo, local, data_hora, vagas, visibilidade, id]);
         res.json({ message: 'Atualizada!' });
     } catch (error) { res.status(500).json({ error: 'Erro ao atualizar.' }); }
 });
@@ -182,7 +181,7 @@ router.delete('/:id/sair', authMiddleware, async (req, res) => {
 router.get('/:id/participantes', async (req, res) => {
     try {
         const [rows] = await pool.query(
-            `SELECT u.id, u.nome, u.email, p.data_inscricao 
+            `SELECT u.id, u.nome, u.email 
              FROM participantes p JOIN usuarios u ON p.usuario_id = u.id 
              WHERE p.atividade_id = ? ORDER BY p.data_inscricao ASC`, [req.params.id]);
         res.json(rows);

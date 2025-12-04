@@ -3,6 +3,7 @@ const router = express.Router();
 const pool = require('../config/db');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const authMiddleware = require('../middleware/auth'); // Importante: ajusta o caminho se necessário
 
 // Rota de Busca (para a barra de pesquisa)
 router.get('/buscar', async (req, res) => {
@@ -11,7 +12,7 @@ router.get('/buscar', async (req, res) => {
 
     try {
         const [usuarios] = await pool.query(
-            'SELECT id, nome, email FROM usuarios WHERE nome LIKE ? LIMIT 10',
+            'SELECT id, nome, email, avatar FROM usuarios WHERE nome LIKE ? LIMIT 10',
             [`%${termo}%`]
         );
         res.json(usuarios);
@@ -21,11 +22,11 @@ router.get('/buscar', async (req, res) => {
     }
 });
 
-// NOVA ROTA: Obter perfil público de um usuário por ID
+// Obter perfil público de um usuário por ID
 router.get('/:id', async (req, res) => {
     try {
         const [rows] = await pool.query(
-            'SELECT id, nome, email FROM usuarios WHERE id = ?',
+            'SELECT id, nome, email, avatar FROM usuarios WHERE id = ?',
             [req.params.id]
         );
 
@@ -50,7 +51,9 @@ router.post('/register', async (req, res) => {
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(password, salt);
 
-        await pool.query("INSERT INTO usuarios (nome, email, senha) VALUES (?, ?, ?)", [name, email, hashedPassword]);
+        // Avatar padrão na criação
+        const defaultAvatar = 'fa-solid fa-user';
+        await pool.query("INSERT INTO usuarios (nome, email, senha, avatar) VALUES (?, ?, ?, ?)", [name, email, hashedPassword, defaultAvatar]);
         res.status(201).json({ message: 'Usuário cadastrado!' });
     } catch (error) {
         console.error(error);
@@ -76,11 +79,34 @@ router.post('/login', async (req, res) => {
         res.json({
             message: 'Login bem-sucedido!',
             token,
-            user: { id: user.id, nome: user.nome, email: user.email }
+            // Retorna o avatar junto com os dados do usuário
+            user: { id: user.id, nome: user.nome, email: user.email, avatar: user.avatar || 'fa-solid fa-user' }
         });
     } catch (error) {
         console.error(error);
         res.status(500).json({ error: 'Erro interno.' });
+    }
+});
+
+// NOVA ROTA: Atualizar Perfil (Nome e Avatar)
+router.put('/perfil', authMiddleware, async (req, res) => {
+    const { nome, avatar } = req.body;
+    const userId = req.userId; // Vem do token (middleware)
+
+    if (!nome || !avatar) {
+        return res.status(400).json({ error: 'Nome e avatar são obrigatórios.' });
+    }
+
+    try {
+        await pool.query(
+            'UPDATE usuarios SET nome = ?, avatar = ? WHERE id = ?',
+            [nome, avatar, userId]
+        );
+
+        res.json({ message: 'Perfil atualizado!', user: { nome, avatar } });
+    } catch (error) {
+        console.error('Erro ao atualizar perfil:', error);
+        res.status(500).json({ error: 'Erro interno ao atualizar perfil.' });
     }
 });
 

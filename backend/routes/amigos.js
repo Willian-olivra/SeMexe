@@ -48,7 +48,7 @@ router.post('/solicitar', autenticarToken, async (req, res) => {
     }
 });
 
-// 2. Verificar Status da Amizade (PARA O PERFIL DO USUÁRIO)
+// 2. Verificar Status da Amizade
 router.get('/check/:id', autenticarToken, async (req, res) => {
     const amigoId = req.params.id;
     const meuId = req.user.id;
@@ -66,11 +66,9 @@ router.get('/check/:id', autenticarToken, async (req, res) => {
         }
 
         const dados = relacao[0];
-        let statusFinal = dados.status; // 'aceito' ou 'pendente'
+        let statusFinal = dados.status;
 
         if (dados.status === 'pendente') {
-            // Se fui eu que enviei (usuario_1), status é 'enviado'
-            // Se eu recebi, status é 'recebido'
             statusFinal = (dados.id_usuario_1 === meuId) ? 'enviado' : 'recebido';
         }
 
@@ -81,12 +79,12 @@ router.get('/check/:id', autenticarToken, async (req, res) => {
     }
 });
 
-// 3. Listar Meus Amigos (Aceitos)
+// 3. Listar Meus Amigos (Aceitos) - CORRIGIDO: Agora seleciona o avatar
 router.get('/', autenticarToken, async (req, res) => {
     const meuId = req.user.id;
     try {
         const [amigos] = await pool.query(`
-            SELECT u.id, u.nome, u.email 
+            SELECT u.id, u.nome, u.email, u.avatar 
             FROM usuarios u
             INNER JOIN amigos a ON (u.id = a.id_usuario_1 OR u.id = a.id_usuario_2)
             WHERE (a.id_usuario_1 = ? OR a.id_usuario_2 = ?)
@@ -99,12 +97,12 @@ router.get('/', autenticarToken, async (req, res) => {
     }
 });
 
-// 4. Listar Solicitações Pendentes
+// 4. Listar Solicitações Pendentes - CORRIGIDO: Agora seleciona o avatar
 router.get('/pendentes', autenticarToken, async (req, res) => {
     const meuId = req.user.id;
     try {
         const [pendentes] = await pool.query(`
-            SELECT u.id, u.nome, u.email 
+            SELECT u.id, u.nome, u.email, u.avatar
             FROM usuarios u
             INNER JOIN amigos a ON u.id = a.id_usuario_1
             WHERE a.id_usuario_2 = ? AND a.status = 'pendente'
