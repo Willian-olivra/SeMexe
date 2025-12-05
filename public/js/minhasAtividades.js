@@ -34,7 +34,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function renderizarMinhasAtividades(atividades) {
-        if (atividades.length === 0) {
+        if (!atividades || atividades.length === 0) {
             eventList.innerHTML = `
                 <div class="col-span-full text-center py-16 bg-dark-surface rounded-xl border border-gray-800 border-dashed">
                     <i class="fa-solid fa-person-running text-5xl text-gray-700 mb-4"></i>
@@ -48,13 +48,17 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         eventList.innerHTML = atividades.map(atividade => {
+            // CORREÇÃO 1: Pega o ID correto (Mongo _id ou SQL id)
+            const id = atividade._id || atividade.id;
+
             const icone = getIconeEsporte(atividade.esporte);
             const dataFormatada = formatarDataHora(atividade.data_hora);
             const participantes = atividade.participantes_count || 0;
-            const vagasDisp = atividade.vagas_disponiveis || (atividade.vagas - participantes);
+            const vagasDisp = atividade.vagas_disponiveis !== undefined ? atividade.vagas_disponiveis : (atividade.vagas - participantes);
             
+            // CORREÇÃO 2: Aspas simples '${id}' nos onclicks são OBRIGATÓRIAS para IDs do Mongo
             return `
-                <article class="bg-dark-surface border border-gray-800 rounded-xl shadow-lg overflow-hidden hover:-translate-y-2 hover:border-neon-blue/50 transition duration-300 flex flex-col h-full" data-id="${atividade.id}">
+                <article class="bg-dark-surface border border-gray-800 rounded-xl shadow-lg overflow-hidden hover:-translate-y-2 hover:border-neon-blue/50 transition duration-300 flex flex-col h-full" data-id="${id}">
                     <div class="p-5 border-b border-gray-800 flex items-center gap-4 bg-black/20">
                         <i class="${icone} text-3xl text-neon-blue"></i>
                         <h3 class="text-xl font-bold text-white truncate flex-1">${atividade.titulo}</h3>
@@ -67,9 +71,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     <div class="p-5 bg-black/40 flex justify-between items-center gap-4 border-t border-gray-800">
                         <span class="bg-neon-blue/10 text-neon-blue border border-neon-blue/30 px-3 py-1 rounded-full text-xs font-medium">${vagasDisp}/${atividade.vagas} vagas</span>
                         <div class="flex gap-3">
-                            <button onclick="window.location.href='atividade.html?id=${atividade.id}'" class="text-gray-400 hover:text-white transition"><i class="fa-solid fa-eye"></i></button>
-                            <button onclick="editarAtividade(${atividade.id})" class="text-gray-400 hover:text-neon-blue transition"><i class="fa-solid fa-pen"></i></button>
-                            <button onclick="deletarAtividade(${atividade.id})" class="text-gray-400 hover:text-neon-pink transition"><i class="fa-solid fa-trash"></i></button>
+                            <button onclick="window.location.href='atividade.html?id=${id}'" class="text-gray-400 hover:text-white transition" title="Ver"><i class="fa-solid fa-eye"></i></button>
+                            <button onclick="editarAtividade('${id}')" class="text-gray-400 hover:text-neon-blue transition" title="Editar"><i class="fa-solid fa-pen"></i></button>
+                            <button onclick="deletarAtividade('${id}')" class="text-gray-400 hover:text-neon-pink transition" title="Excluir"><i class="fa-solid fa-trash"></i></button>
                         </div>
                     </div>
                 </article>
@@ -80,7 +84,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- AÇÕES GLOBAIS ---
 
     window.deletarAtividade = async function(id) {
-        // USA O NOVO MODAL
+        if (!id || id === 'undefined') return;
+
         const confirmado = await showConfirmModal('Tem certeza que deseja excluir esta atividade permanentemente?', 'Sim, Excluir', 'Cancelar');
         
         if (!confirmado) return;
@@ -109,7 +114,11 @@ document.addEventListener('DOMContentLoaded', () => {
     };
     
     window.editarAtividade = function(id) {
-        window.location.href = `editarAtividade.html?id=${id}`;
+        if(id && id !== 'undefined') {
+            window.location.href = `editarAtividade.html?id=${id}`;
+        } else {
+            showToast('Erro: ID da atividade inválido', 'error');
+        }
     };
 
     function getIconeEsporte(esporte) {
@@ -124,7 +133,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function formatarDataHora(dataHora) {
-        return new Date(dataHora).toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+        return new Date(dataHora).toLocaleDateString('pt-BR', { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
     }
 
     carregarMinhasAtividades();
