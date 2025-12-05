@@ -1,45 +1,33 @@
 const jwt = require('jsonwebtoken');
- //Middleware de autenticação JWT
- //Verifica se o token é válido e extrai o ID do usuário
-const authMiddleware = (req, res, next) => {
-    // Pega o token do header Authorization
-    // Formato esperado: "Bearer TOKEN_AQUI"
-    const authHeader = req.headers.authorization;
 
+module.exports = function (req, res, next) {
+    // 1. Tenta pegar o token do Header
+    const authHeader = req.headers['authorization'];
+    
+    // Se não tiver header, bloqueia
     if (!authHeader) {
-        return res.status(401).json({ error: 'Token não fornecido. Faça login primeiro.' });
+        return res.status(401).json({ error: 'Acesso negado. Token não fornecido.' });
     }
 
-    // Separa "Bearer" do token
-    const parts = authHeader.split(' ');
+    // 2. Limpa o token (remove a palavra "Bearer " se existir)
+    const token = authHeader.split(' ')[1];
 
-    if (parts.length !== 2) {
-        return res.status(401).json({ error: 'Formato de token inválido.' });
-    }
-
-    const [scheme, token] = parts;
-
-    // Verifica se o esquema é "Bearer"
-    if (!/^Bearer$/i.test(scheme)) {
-        return res.status(401).json({ error: 'Token mal formatado.' });
+    if (!token) {
+        return res.status(401).json({ error: 'Acesso negado. Formato de token inválido.' });
     }
 
     try {
-        // Verifica e decodifica o token
+        // 3. Verifica o token
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
         
-        // Adiciona o ID do usuário na requisição para uso posterior
-        req.userId = decoded.id;
-        req.userEmail = decoded.email;
+        // 4. Adiciona os dados do usuário na requisição
+        req.user = decoded; 
         
-        // Continua para a próxima função
+        // Opcional: Garante compatibilidade se algum código antigo usar req.userId
+        req.userId = decoded.id; 
+
         next();
-    } catch (error) {
-        if (error.name === 'TokenExpiredError') {
-            return res.status(401).json({ error: 'Token expirado. Faça login novamente.' });
-        }
-        return res.status(401).json({ error: 'Token inválido.' });
+    } catch (err) {
+        res.status(403).json({ error: 'Token inválido ou expirado.' });
     }
 };
-
-module.exports = authMiddleware;

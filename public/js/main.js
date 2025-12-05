@@ -61,16 +61,36 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function renderizarAtividades(atividades) {
         if (!eventList) return;
+        
+        // --- CÓDIGO DE DEPURAÇÃO (AQUI ESTÁ O QUE VAI NOS AJUDAR) ---
+        if (atividades.length > 0) {
+            console.log("🔍 --- INÍCIO DA INSPEÇÃO ---");
+            console.log("🔍 OBJETO COMPLETO:", atividades[0]);
+            console.log("🔍 TENTANDO LER OS IDS:");
+            console.log("👉 id:", atividades[0].id);
+            console.log("👉 _id:", atividades[0]._id);
+            console.log("👉 id_atividade:", atividades[0].id_atividade);
+            console.log("🔍 --- FIM DA INSPEÇÃO ---");
+        }
+        // -------------------------------------------------------------
+
         if (atividades.length === 0) {
             eventList.innerHTML = `<div class="col-span-full text-center py-10"><p class="text-gray-500">Nenhuma atividade.</p></div>`;
             return;
         }
 
         eventList.innerHTML = atividades.map(a => {
+            // Tenta pegar o ID de todas as formas possíveis
+            const atividadeId = a._id || a.id || a.id_atividade;
+
             const icone = getIconeEsporte(a.esporte);
             const dataF = formatarDataHora(a.data_hora);
             const badgeClass = a.lotada ? 'bg-neon-pink/10 text-neon-pink' : 'bg-neon-blue/10 text-neon-blue';
             const iconeVisibilidade = a.visibilidade === 'friends' ? `<i class="fa-solid fa-user-group text-neon-pink ml-2" title="Amigos"></i>` : '';
+
+            // Se não tiver ID, coloca '#' para não quebrar a página, mas avisa no console
+            const linkHref = atividadeId ? `atividade.html?id=${atividadeId}` : '#';
+            if (!atividadeId) console.error("❌ ERRO: Atividade sem ID gerando link quebrado!", a);
 
             return `
                 <article class="bg-dark-surface border border-gray-800 rounded-xl shadow-lg hover:-translate-y-2 hover:border-neon-blue/50 transition duration-300 flex flex-col h-full">
@@ -96,7 +116,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>
                     <div class="p-5 bg-black/40 flex justify-between items-center gap-3 border-t border-gray-800">
                         <span class="${badgeClass} border px-3 py-1 rounded-full text-xs font-bold uppercase">${a.vagas_disponiveis}/${a.vagas} vagas</span>
-                        <a href="atividade.html?id=${a.id}" class="text-neon-blue hover:text-white font-semibold transition border border-neon-blue hover:bg-neon-blue px-4 py-1.5 rounded-md text-sm">Ver Detalhes</a>
+                        <a href="${linkHref}" class="text-neon-blue hover:text-white font-semibold transition border border-neon-blue hover:bg-neon-blue px-4 py-1.5 rounded-md text-sm">Ver Detalhes</a>
                     </div>
                 </article>
             `;
