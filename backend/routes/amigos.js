@@ -1,77 +1,67 @@
 const express = require('express');
 const router = express.Router();
-const pool = require('../config/db');
-const jwt = require('jsonwebtoken');
-
-// Middleware de Autenticação
-const autenticarToken = (req, res, next) => {
-    const authHeader = req.headers['authorization'];
-    const token = authHeader && authHeader.split(' ')[1];
-    if (!token) return res.status(401).json({ error: 'Acesso negado' });
-
-    jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
-        if (err) return res.status(403).json({ error: 'Token inválido' });
-        req.user = user;
-        next();
-    });
-};
+const Friendship = require('../models/Friendship'); // Model de Amizade
+const User = require('../models/User'); // Model de Usuário
+const authMiddleware = require('../middleware/auth'); // Seu middleware
 
 // 1. Enviar Solicitação
-router.post('/solicitar', autenticarToken, async (req, res) => {
+router.post('/solicitar', authMiddleware, async (req, res) => {
     const { amigoId } = req.body;
-    const meuId = req.user.id;
+    const meuId = req.user.id; // No Mongo isso geralmente é _id
 
-    if (parseInt(meuId) === parseInt(amigoId)) {
+    if (meuId === amigoId) {
         return res.status(400).json({ error: 'Você não pode adicionar a si mesmo.' });
     }
 
     try {
-        const [existe] = await pool.query(
-            `SELECT * FROM amigos 
-             WHERE (id_usuario_1 = ? AND id_usuario_2 = ?) 
-                OR (id_usuario_1 = ? AND id_usuario_2 = ?)`,
-            [meuId, amigoId, amigoId, meuId]
-        );
+        // Verifica se já existe qualquer relação entre os dois
+        const existe = await Friendship.findOne({
+            $or: [
+                { requester: meuId, recipient: amigoId },
+                { requester: amigoId, recipient: meuId }
+            ]
+        });
 
-        if (existe.length > 0) {
+        if (existe) {
             return res.status(400).json({ error: 'Solicitação já enviada ou vocês já são amigos.' });
         }
 
-        await pool.query(
-            'INSERT INTO amigos (id_usuario_1, id_usuario_2, status) VALUES (?, ?, ?)',
-            [meuId, amigoId, 'pendente']
-        );
+        const novaAmizade = new Friendship({
+            requester: meuId,
+            recipient: amigoId,
+            status: 'pendente'
+        });
 
+        await novaAmizade.save();
         res.json({ message: 'Solicitação de amizade enviada!' });
     } catch (error) {
+        console.error(error);
         res.status(500).json({ error: 'Erro ao adicionar amigo.' });
     }
 });
 
-// 2. Verificar Status da Amizade (PARA O PERFIL DO USUÁRIO)
-router.get('/check/:id', autenticarToken, async (req, res) => {
+// 2. Verificar Status da Amizade
+router.get('/check/:id', authMiddleware, async (req, res) => {
     const amigoId = req.params.id;
     const meuId = req.user.id;
 
     try {
-        const [relacao] = await pool.query(
-            `SELECT status, id_usuario_1 FROM amigos 
-             WHERE (id_usuario_1 = ? AND id_usuario_2 = ?) 
-                OR (id_usuario_1 = ? AND id_usuario_2 = ?)`,
-            [meuId, amigoId, amigoId, meuId]
-        );
+        const relacao = await Friendship.findOne({
+            $or: [
+                { requester: meuId, recipient: amigoId },
+                { requester: amigoId, recipient: meuId }
+            ]
+        });
 
-        if (relacao.length === 0) {
+        if (!relacao) {
             return res.json({ status: 'nenhum' });
         }
 
-        const dados = relacao[0];
-        let statusFinal = dados.status; // 'aceito' ou 'pendente'
+        let statusFinal = relacao.status;
 
-        if (dados.status === 'pendente') {
-            // Se fui eu que enviei (usuario_1), status é 'enviado'
-            // Se eu recebi, status é 'recebido'
-            statusFinal = (dados.id_usuario_1 === meuId) ? 'enviado' : 'recebido';
+        if (relacao.status === 'pendente') {
+            // Verifica quem enviou para dizer se foi "enviado" ou "recebido"
+            statusFinal = (relacao.requester.toString() === meuId) ? 'enviado' : 'recebido';
         }
 
         res.json({ status: statusFinal });
@@ -82,58 +72,69 @@ router.get('/check/:id', autenticarToken, async (req, res) => {
 });
 
 // 3. Listar Meus Amigos (Aceitos)
-router.get('/', autenticarToken, async (req, res) => {
+router.get('/', authMiddleware, async (req, res) => {
     const meuId = req.user.id;
     try {
-        const [amigos] = await pool.query(`
-            SELECT u.id, u.nome, u.email 
-            FROM usuarios u
-            INNER JOIN amigos a ON (u.id = a.id_usuario_1 OR u.id = a.id_usuario_2)
-            WHERE (a.id_usuario_1 = ? OR a.id_usuario_2 = ?)
-            AND a.status = 'aceito'
-            AND u.id != ?
-        `, [meuId, meuId, meuId]);
-        res.json(amigos);
+        // Busca amizades aceitas onde sou requester OU recipient
+        const amizades = await Friendship.find({
+            $or: [{ requester: meuId }, { recipient: meuId }],
+            status: 'aceito'
+        }).populate('requester recipient', 'nome email avatar'); // Popula os dados dos usuários
+
+        // Formata o array para retornar apenas o "outro" usuário
+        const listaAmigos = amizades.map(a => {
+            const ehRequester = a.requester._id.toString() === meuId;
+            return ehRequester ? a.recipient : a.requester;
+        });
+
+        res.json(listaAmigos);
     } catch (error) {
+        console.error(error);
         res.status(500).json({ error: 'Erro ao buscar amigos.' });
     }
 });
 
-// 4. Listar Solicitações Pendentes
-router.get('/pendentes', autenticarToken, async (req, res) => {
+// 4. Listar Solicitações Pendentes (Recebidas)
+router.get('/pendentes', authMiddleware, async (req, res) => {
     const meuId = req.user.id;
     try {
-        const [pendentes] = await pool.query(`
-            SELECT u.id, u.nome, u.email 
-            FROM usuarios u
-            INNER JOIN amigos a ON u.id = a.id_usuario_1
-            WHERE a.id_usuario_2 = ? AND a.status = 'pendente'
-        `, [meuId]);
-        res.json(pendentes);
+        // Busca onde SOU o RECIPIENT (quem recebeu) e status é pendente
+        const pendentes = await Friendship.find({
+            recipient: meuId,
+            status: 'pendente'
+        }).populate('requester', 'nome email avatar');
+
+        // Retorna apenas os dados de quem enviou (requester)
+        const lista = pendentes.map(p => p.requester);
+        res.json(lista);
     } catch (error) {
         res.status(500).json({ error: 'Erro ao buscar solicitações.' });
     }
 });
 
 // 5. Responder Solicitação
-router.post('/responder', autenticarToken, async (req, res) => {
+router.post('/responder', authMiddleware, async (req, res) => {
     const { amigoId, acao } = req.body;
     const meuId = req.user.id;
 
     if (!['aceitar', 'recusar'].includes(acao)) return res.status(400).json({ error: 'Ação inválida.' });
 
     try {
+        // Busca a solicitação específica onde EU sou o destinatário
+        const solicitacao = await Friendship.findOne({
+            requester: amigoId,
+            recipient: meuId,
+            status: 'pendente'
+        });
+
+        if (!solicitacao) return res.status(404).json({ error: 'Solicitação não encontrada.' });
+
         if (acao === 'aceitar') {
-            await pool.query(
-                `UPDATE amigos SET status = 'aceito' WHERE id_usuario_1 = ? AND id_usuario_2 = ?`,
-                [amigoId, meuId]
-            );
+            solicitacao.status = 'aceito';
+            await solicitacao.save();
             res.json({ message: 'Agora vocês são amigos!' });
         } else {
-            await pool.query(
-                `DELETE FROM amigos WHERE id_usuario_1 = ? AND id_usuario_2 = ?`,
-                [amigoId, meuId]
-            );
+            await Friendship.findByIdAndDelete(solicitacao._id);
             res.json({ message: 'Solicitação recusada.' });
         }
     } catch (error) {
@@ -142,25 +143,24 @@ router.post('/responder', autenticarToken, async (req, res) => {
 });
 
 // 6. Excluir Amigo
-router.delete('/:id', autenticarToken, async (req, res) => {
+router.delete('/:id', authMiddleware, async (req, res) => {
     const amigoId = req.params.id;
     const meuId = req.user.id;
 
     try {
-        const [result] = await pool.query(
-            `DELETE FROM amigos 
-             WHERE (id_usuario_1 = ? AND id_usuario_2 = ?) 
-                OR (id_usuario_1 = ? AND id_usuario_2 = ?)`,
-            [meuId, amigoId, amigoId, meuId]
-        );
+        const resultado = await Friendship.findOneAndDelete({
+            $or: [
+                { requester: meuId, recipient: amigoId },
+                { requester: amigoId, recipient: meuId }
+            ]
+        });
 
-        if (result.affectedRows > 0) {
+        if (resultado) {
             res.json({ message: 'Amigo removido com sucesso.' });
         } else {
             res.status(404).json({ error: 'Amizade não encontrada.' });
         }
     } catch (error) {
-        console.error(error);
         res.status(500).json({ error: 'Erro ao remover amigo.' });
     }
 });

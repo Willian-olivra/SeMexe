@@ -1,21 +1,25 @@
 document.addEventListener('DOMContentLoaded', async () => {
-    // Carrega o menu
+    // Carrega o menu se a função existir (utils.js)
     if (typeof atualizarMenu === 'function') atualizarMenu();
 
     const params = new URLSearchParams(window.location.search);
     const userId = params.get('id');
     const token = localStorage.getItem('token');
-    const meuUser = getUsuarioLogado();
+    const meuUser = getUsuarioLogado(); // Pega dados do localStorage
 
-    if (!userId) { window.location.href = 'index.html'; return; }
+    // Redireciona se não tiver ID na URL
+    if (!userId || userId === 'undefined') { 
+        window.location.href = 'index.html'; 
+        return; 
+    }
 
-    // Se for meu perfil, redireciona
-    if (meuUser && parseInt(userId) === parseInt(meuUser.id)) {
+    // Se for meu perfil, redireciona para a página de edição/perfil próprio
+    if (meuUser && (userId.toString() === meuUser.id?.toString() || userId.toString() === meuUser._id?.toString())) {
         window.location.href = 'perfil.html';
         return;
     }
 
-    // Elementos da UI
+    // --- Elementos da Interface ---
     const btnAdd = document.getElementById('btn-add');
     const btnPending = document.getElementById('btn-pending');
     const areaAmigo = document.getElementById('area-amigo');
@@ -23,22 +27,54 @@ document.addEventListener('DOMContentLoaded', async () => {
     const btnMsg = document.getElementById('btn-mensagem');
     const actionsContainer = document.getElementById('friend-actions');
 
-    // Variáveis Chat
+    // --- Variáveis do Chat ---
     let socket;
+    let chatAmigoIdAtual = null; // Guarda o ID de com quem estamos falando agora
     const chatWindow = document.getElementById('chat-window');
     const chatMessages = document.getElementById('chat-messages');
     const chatInput = document.getElementById('chat-input');
-    const btnCloseChat = document.getElementById('chat-close'); // Botão X
+    const btnCloseChat = document.getElementById('chat-close');
+    const btnSendChat = document.getElementById('chat-send');
 
-    // --- CORREÇÃO: LÓGICA DE FECHAR O CHAT (GLOBAL) ---
-    if (btnCloseChat) {
-        btnCloseChat.addEventListener('click', () => {
-            chatWindow.classList.add('hidden');
-            chatWindow.style.display = 'none'; // Garante que suma
+    // --- 1. CONFIGURAÇÃO DO SOCKET.IO ---
+    if (typeof io !== 'undefined' && token) {
+        socket = io({
+            auth: { token: token } // Autentica no socket
+        });
+
+        // Ouve mensagens chegando em tempo real
+        socket.on('mensagem_recebida', (msg) => {
+            // Só mostra na tela se a janela estiver aberta E for conversa com essa pessoa
+            if (!chatWindow.classList.contains('hidden') && 
+                (msg.remetenteId === chatAmigoIdAtual || msg.destinatarioId === chatAmigoIdAtual)) {
+                
+                const souEu = msg.remetenteId.toString() === (meuUser.id || meuUser._id).toString();
+                adicionarMensagemNaTela(msg.conteudo || msg.texto, souEu);
+                rolarParaBaixo();
+            }
         });
     }
 
-    // 1. Carrega Dados do Usuário
+    // Eventos de UI do Chat
+    if (btnCloseChat) {
+        btnCloseChat.addEventListener('click', () => {
+            chatWindow.classList.add('hidden');
+            chatWindow.style.display = 'none';
+            chatAmigoIdAtual = null; // Limpa o ID para não receber msg errada
+        });
+    }
+
+    if (btnSendChat) {
+        btnSendChat.addEventListener('click', enviarMensagem);
+    }
+
+    if (chatInput) {
+        chatInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') enviarMensagem();
+        });
+    }
+
+    // --- 2. CARREGAR DADOS DO USUÁRIO ---
     try {
         const res = await fetch(`/api/users/${userId}`);
         if (!res.ok) throw new Error('Usuário não encontrado');
@@ -47,12 +83,19 @@ document.addEventListener('DOMContentLoaded', async () => {
         
         document.getElementById('perfil-nome').textContent = user.nome;
         document.getElementById('perfil-email').textContent = user.email;
-        document.getElementById('avatar-letra').textContent = user.nome.charAt(0).toUpperCase();
 
-        // Se estiver logado, verifica o status da amizade
+        const avatarEl = document.getElementById('avatar-letra');
+        if (user.avatar && user.avatar.includes('fa-')) {
+            avatarEl.textContent = '';
+            avatarEl.innerHTML = `<i class="${user.avatar}"></i>`;
+        } else {
+            avatarEl.textContent = user.nome.charAt(0).toUpperCase();
+        }
+
         if (token) {
             actionsContainer.classList.remove('hidden');
-            verificarStatusAmizade(user.id);
+            // Verifica se já são amigos
+            verificarStatusAmizade(user.id || user._id);
         }
 
     } catch (error) {
@@ -61,15 +104,15 @@ document.addEventListener('DOMContentLoaded', async () => {
         document.getElementById('lista-atividades').innerHTML = '';
     }
 
-    // 2. Carrega Atividades Públicas
+    // --- 3. CARREGAR ATIVIDADES DO USUÁRIO ---
     try {
         const res = await fetch(`/api/atividades/usuario/${userId}`);
         const atividades = await res.json();
         renderizarAtividades(atividades);
     } catch (error) { console.error(error); }
 
-    // --- LÓGICA DE AMIZADE EM TEMPO REAL ---
 
+    // --- FUNÇÕES DE AMIZADE ---
     async function verificarStatusAmizade(amigoId) {
         try {
             const res = await fetch(`/api/amigos/check/${amigoId}`, {
@@ -77,11 +120,13 @@ document.addEventListener('DOMContentLoaded', async () => {
             });
             const data = await res.json();
             
-            // Reseta visualização
-            btnAdd.classList.add('hidden');
-            btnPending.classList.add('hidden');
-            areaAmigo.classList.add('hidden');
-            areaAmigo.style.display = 'none';
+            // Reseta botões
+            if(btnAdd) btnAdd.classList.add('hidden');
+            if(btnPending) btnPending.classList.add('hidden');
+            if(areaAmigo) {
+                areaAmigo.classList.add('hidden');
+                areaAmigo.style.display = 'none';
+            }
 
             if (data.status === 'nenhum') {
                 btnAdd.classList.remove('hidden');
@@ -93,26 +138,24 @@ document.addEventListener('DOMContentLoaded', async () => {
             
             } else if (data.status === 'recebido') {
                 btnPending.classList.remove('hidden');
-                btnPending.innerHTML = '<i class="fa-solid fa-envelope"></i> Pedido Recebido (Ver Perfil)';
+                btnPending.innerHTML = '<i class="fa-solid fa-envelope"></i> Pedido Recebido';
                 btnPending.onclick = () => window.location.href = 'perfil.html';
-                btnPending.classList.remove('cursor-default', 'opacity-70');
-                btnPending.classList.add('cursor-pointer', 'hover:bg-gray-600');
+                btnPending.classList.add('cursor-pointer');
 
             } else if (data.status === 'aceito') {
                 areaAmigo.classList.remove('hidden');
                 areaAmigo.style.display = 'flex';
                 
-                // Configura remover
+                // Configura botão de remover
                 const novoBtnRemove = btnRemove.cloneNode(true);
-                btnRemove.parentNode.replaceChild(novoBtnRemove, btnRemove);
+                if(btnRemove.parentNode) btnRemove.parentNode.replaceChild(novoBtnRemove, btnRemove);
                 novoBtnRemove.onclick = () => removerAmizade(amigoId, document.getElementById('perfil-nome').textContent);
                 
                 // Configura botão de mensagem
                 const novoBtnMsg = btnMsg.cloneNode(true);
-                btnMsg.parentNode.replaceChild(novoBtnMsg, btnMsg);
+                if(btnMsg.parentNode) btnMsg.parentNode.replaceChild(novoBtnMsg, btnMsg);
                 novoBtnMsg.onclick = () => abrirChat(amigoId, document.getElementById('perfil-nome').textContent);
             }
-
         } catch (error) { console.error(error); }
     }
 
@@ -145,13 +188,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     async function removerAmizade(friendId, nomeAmigo) {
-        let confirmado = false;
-        if (typeof showConfirmModal === 'function') {
-            confirmado = await showConfirmModal(`Desfazer amizade com ${nomeAmigo}?`, 'Sim, desfazer', 'Cancelar');
-        } else {
-            confirmado = confirm(`Desfazer amizade com ${nomeAmigo}?`);
-        }
-
+        let confirmado = await showConfirmModal(`Desfazer amizade com ${nomeAmigo}?`, 'Sim, desfazer', 'Cancelar');
         if (!confirmado) return;
 
         try {
@@ -166,106 +203,132 @@ document.addEventListener('DOMContentLoaded', async () => {
             } else {
                 showToast('Erro ao remover.', 'error');
             }
-        } catch (error) {
-            showToast('Erro de conexão.', 'error');
-        }
+        } catch (error) { showToast('Erro de conexão.', 'error'); }
     }
 
-    // --- LÓGICA DO CHAT ---
 
+    // --- FUNÇÕES DO CHAT ---
     function abrirChat(amigoId, nomeAmigo) {
+        chatAmigoIdAtual = amigoId;
         chatWindow.classList.remove('hidden');
-        chatWindow.style.display = 'flex'; // Garante flex
+        chatWindow.style.display = 'flex';
         document.getElementById('chat-amigo-nome').textContent = nomeAmigo;
         
-        if (!socket) {
-            socket = io();
-            socket.emit('entrar_chat', meuUser.id);
-
-            socket.on('receber_mensagem', (data) => {
-                if (parseInt(data.remetenteId) === parseInt(amigoId) || parseInt(data.remetenteId) === parseInt(meuUser.id)) {
-                    adicionarMensagemNaTela(data.texto, parseInt(data.remetenteId) === parseInt(meuUser.id));
-                }
-            });
-        }
-
         carregarHistorico(amigoId);
-
-        const enviar = () => {
-            const texto = chatInput.value.trim();
-            if (!texto) return;
-            
-            socket.emit('enviar_mensagem', {
-                remetenteId: meuUser.id,
-                destinatarioId: amigoId,
-                texto: texto
-            });
-
-            adicionarMensagemNaTela(texto, true);
-            chatInput.value = '';
-        };
-
-        const btnSend = document.getElementById('chat-send');
-        const newBtnSend = btnSend.cloneNode(true);
-        btnSend.parentNode.replaceChild(newBtnSend, btnSend);
-        
-        newBtnSend.onclick = enviar;
-        chatInput.onkeypress = (e) => { if(e.key === 'Enter') enviar(); };
+        setTimeout(() => chatInput.focus(), 100);
     }
 
     async function carregarHistorico(amigoId) {
         chatMessages.innerHTML = '<p class="text-center text-gray-600 text-xs py-4">Carregando...</p>';
         try {
-            const res = await fetch(`/api/chat/historico/${amigoId}`, { headers: { 'Authorization': `Bearer ${token}` } });
+            const res = await fetch(`/api/chat/historico/${amigoId}`, { 
+                headers: { 'Authorization': `Bearer ${token}` } 
+            });
             const msgs = await res.json();
             chatMessages.innerHTML = '';
+            
+            if (msgs.length === 0) {
+                 chatMessages.innerHTML = '<p class="text-center text-gray-500 text-xs mt-4">Nenhuma mensagem ainda.</p>';
+            }
+
             msgs.forEach(m => {
-                adicionarMensagemNaTela(m.mensagem, parseInt(m.remetente_id) === parseInt(meuUser.id));
+                const remetenteId = m.remetente._id || m.remetente; 
+                const meuId = meuUser._id || meuUser.id;
+                const souEu = remetenteId.toString() === meuId.toString();
+                adicionarMensagemNaTela(m.conteudo || m.texto, souEu);
             });
-            chatMessages.scrollTop = chatMessages.scrollHeight;
+            rolarParaBaixo();
         } catch (e) { 
-            console.error(e); 
-            chatMessages.innerHTML = '<p class="text-center text-neon-pink text-xs">Erro no histórico.</p>';
+            chatMessages.innerHTML = '<p class="text-center text-gray-500 text-xs">Erro ao carregar mensagens.</p>'; 
+        }
+    }
+
+    async function enviarMensagem() {
+        const texto = chatInput.value.trim();
+        if (!texto || !chatAmigoIdAtual) return;
+
+        chatInput.value = ''; // Limpa input
+        adicionarMensagemNaTela(texto, true); // Mostra na tela (otimista)
+        rolarParaBaixo();
+
+        try {
+            const res = await fetch('/api/chat/enviar', {
+                method: 'POST',
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({ 
+                    destinatarioId: chatAmigoIdAtual, 
+                    texto: texto 
+                })
+            });
+
+            if (res.ok) {
+                // SUCESSO NO BANCO -> AVISA O SOCKET
+                if(socket && meuUser) {
+                    // CORREÇÃO AQUI: Garante que pega o ID correto
+                    const meuIdCorreto = meuUser._id || meuUser.id;
+                    
+                    socket.emit('enviar_mensagem', {
+                        destinatarioId: chatAmigoIdAtual,
+                        texto: texto,
+                        remetenteId: meuIdCorreto // Envia o ID certo pro servidor
+                    });
+                }
+            } else {
+                console.error('Erro ao salvar mensagem no servidor.');
+            }
+
+        } catch (error) {
+            console.error('Erro de conexão:', error);
         }
     }
 
     function adicionarMensagemNaTela(texto, souEu) {
         const div = document.createElement('div');
         div.className = `flex ${souEu ? 'justify-end' : 'justify-start'}`;
-        div.innerHTML = `
-            <div class="${souEu ? 'bg-neon-blue text-black' : 'bg-gray-700 text-white'} px-3 py-2 rounded-lg max-w-[80%] text-sm break-words shadow-sm animate-fade-in">
-                ${texto}
-            </div>
-        `;
+        div.innerHTML = `<div class="${souEu ? 'bg-neon-blue text-black' : 'bg-gray-700 text-white'} px-3 py-2 rounded-lg max-w-[80%] text-sm break-words shadow-sm">${texto}</div>`;
         chatMessages.appendChild(div);
+    }
+
+    function rolarParaBaixo() {
         chatMessages.scrollTop = chatMessages.scrollHeight;
     }
 
-    // --- RENDERIZAÇÃO DE ATIVIDADES ---
 
+    // --- RENDERIZAR ATIVIDADES NA PÁGINA ---
     function renderizarAtividades(atividades) {
         const container = document.getElementById('lista-atividades');
         
-        if (atividades.length === 0) {
+        if (!atividades || atividades.length === 0) {
             container.innerHTML = '<p class="col-span-full text-center text-gray-500 py-10">Este usuário não tem atividades públicas recentes.</p>';
             return;
         }
 
-        container.innerHTML = atividades.map(a => `
-            <div class="bg-dark-highlight border border-gray-700 p-4 rounded-lg hover:border-neon-blue transition cursor-pointer group" onclick="window.location.href='atividade.html?id=${a.id}'">
+        container.innerHTML = atividades.map(a => {
+            const idAtividade = a._id || a.id;
+            
+            return `
+            <div class="bg-dark-highlight border border-gray-700 p-4 rounded-lg hover:border-neon-blue transition cursor-pointer group" onclick="window.location.href='atividade.html?id=${idAtividade}'">
                 <div class="flex justify-between items-start mb-2">
                     <h4 class="font-bold text-white truncate w-3/4 group-hover:text-neon-blue transition">${a.titulo}</h4>
                     <span class="text-xs bg-neon-blue/10 text-neon-blue px-2 py-1 rounded border border-neon-blue/20">${a.esporte}</span>
                 </div>
                 <div class="space-y-1">
-                    <p class="text-gray-400 text-sm flex items-center gap-2">
-                        <i class="fa-solid fa-location-dot w-5 text-center text-gray-600"></i> ${a.local}
-                    </p>
-                    <p class="text-gray-400 text-sm flex items-center gap-2">
-                        <i class="fa-solid fa-calendar-days w-5 text-center text-gray-600"></i> ${new Date(a.data_hora).toLocaleDateString()}
-                    </p>
+                    <p class="text-gray-400 text-sm flex items-center gap-2"><i class="fa-solid fa-location-dot w-5 text-center text-gray-600"></i> ${a.local}</p>
+                    <p class="text-gray-400 text-sm flex items-center gap-2"><i class="fa-solid fa-calendar-days w-5 text-center text-gray-600"></i> ${new Date(a.data_hora).toLocaleDateString()}</p>
                 </div>
             </div>
-        `).join('');
+        `}).join('');
+    }
+
+    // Função auxiliar para garantir que pega o usuário
+    function getUsuarioLogado() {
+        try { 
+            return JSON.parse(localStorage.getItem('userInfo')); 
+        } catch { 
+            return null; 
+        }
     }
 });
