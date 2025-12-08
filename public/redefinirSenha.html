@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nova Senha - Se Mexe</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: { 'neon-blue': '#00E5FF', 'neon-pink': '#FF007F', 'dark-base': '#121212', 'dark-surface': '#1E1E1E' },
+                    fontFamily: { sans: ['Poppins', 'sans-serif'] }
+                }
+            }
+        }
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+</head>
+<body class="bg-dark-base text-white font-sans flex items-center justify-center min-h-screen px-4">
+
+    <div class="w-full max-w-md bg-dark-surface p-8 rounded-xl shadow-lg border border-gray-800">
+        <div class="text-center mb-6">
+            <h2 class="text-2xl font-bold text-white">Criar Nova Senha</h2>
+            <p class="text-gray-400 text-sm mt-2">Escolha uma senha forte para proteger sua conta.</p>
+        </div>
+
+        <form id="form-reset" class="space-y-4">
+            <div>
+                <label class="block text-gray-400 text-sm mb-1">Nova Senha</label>
+                <input type="password" id="senha" placeholder="Mínimo 6 chars, maiúscula e número" required class="w-full bg-[#121212] border border-gray-700 rounded p-3 text-white focus:border-neon-blue focus:outline-none transition">
+            </div>
+            
+            <div>
+                <label class="block text-gray-400 text-sm mb-1">Confirmar Nova Senha</label>
+                <input type="password" id="confirmar-senha" placeholder="Repita a senha" required class="w-full bg-[#121212] border border-gray-700 rounded p-3 text-white focus:border-neon-blue focus:outline-none transition">
+            </div>
+
+            <button type="submit" id="btn-salvar" class="w-full bg-neon-blue text-black font-bold py-3 rounded hover:bg-white hover:shadow-[0_0_15px_rgba(0,229,255,0.5)] transition duration-300">
+                Redefinir Senha
+            </button>
+        </form>
+        
+        <p id="msg" class="text-center mt-4 text-sm font-bold min-h-[20px]"></p>
+    </div>
+
+    <script>
+        // Pega o token da URL (?token=xyz...)
+        const params = new URLSearchParams(window.location.search);
+        const token = params.get('token');
+
+        if (!token) {
+            document.body.innerHTML = `
+                <div class="flex flex-col items-center justify-center h-screen text-center px-4">
+                    <i class="fa-solid fa-triangle-exclamation text-neon-pink text-5xl mb-4"></i>
+                    <h1 class='text-white text-2xl font-bold'>Token inválido ou ausente</h1>
+                    <p class="text-gray-400 mt-2">Por favor, solicite a recuperação de senha novamente.</p>
+                    <a href="esqueciSenha.html" class="mt-6 text-neon-blue hover:underline">Voltar</a>
+                </div>
+            `;
+        }
+
+        document.getElementById('form-reset').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const senha = document.getElementById('senha').value;
+            const confirmar = document.getElementById('confirmar-senha').value;
+            const btn = document.getElementById('btn-salvar');
+            const msg = document.getElementById('msg');
+
+            msg.innerText = "";
+            msg.className = "text-center mt-4 text-sm font-bold";
+
+            if (senha !== confirmar) {
+                msg.className = "text-center mt-4 text-sm font-bold text-neon-pink";
+                msg.innerText = "As senhas não coincidem.";
+                return;
+            }
+
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Salvando...';
+
+            try {
+                const res = await fetch(`/api/users/reset-password/${token}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    // IMPORTANTE: Aqui enviamos 'password' pois o backend users.js espera 'password'
+                    body: JSON.stringify({ password: senha }) 
+                });
+
+                const data = await res.json();
+
+                if (res.ok) {
+                    msg.className = "text-center mt-4 text-sm font-bold text-green-400";
+                    msg.innerHTML = '<i class="fa-solid fa-check-circle"></i> Senha alterada com sucesso!';
+                    btn.innerHTML = "Redirecionando...";
+                    
+                    setTimeout(() => window.location.href = 'login.html', 3000);
+                } else {
+                    msg.className = "text-center mt-4 text-sm font-bold text-neon-pink";
+                    msg.innerText = data.error || "Erro ao alterar senha.";
+                    btn.disabled = false;
+                    btn.innerText = "Tentar Novamente";
+                }
+            } catch (err) {
+                msg.className = "text-center mt-4 text-sm font-bold text-neon-pink";
+                msg.innerText = "Erro de conexão com o servidor.";
+                btn.disabled = false;
+                btn.innerText = "Tentar Novamente";
+            }
+        });
+    </script>
+</body>
+</html>
