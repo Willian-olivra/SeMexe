@@ -1,8 +1,9 @@
+// Arquivo: routes/users.js
 const express = require('express');
 const router = express.Router();
-const pool = require('../config/db');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const User = require('../models/User'); // Importamos o Modelo, não o DB direto
 
 // Rota de Busca (para a barra de pesquisa)
 router.get('/buscar', async (req, res) => {
@@ -10,10 +11,11 @@ router.get('/buscar', async (req, res) => {
     if (!termo || termo.length < 3) return res.json([]);
 
     try {
-        const [usuarios] = await pool.query(
-            'SELECT id, nome, email FROM usuarios WHERE nome LIKE ? LIMIT 10',
-            [`%${termo}%`]
-        );
+        // Busca usuários onde o nome contém o termo (regex 'i' = case insensitive)
+        const usuarios = await User.find({ 
+            nome: { $regex: termo, $options: 'i' } 
+        }).select('id nome email').limit(10);
+        
         res.json(usuarios);
     } catch (error) {
         console.error('Erro na busca:', error);
@@ -21,40 +23,46 @@ router.get('/buscar', async (req, res) => {
     }
 });
 
-// NOVA ROTA: Obter perfil público de um usuário por ID
+// Perfil Público por ID
 router.get('/:id', async (req, res) => {
     try {
-        const [rows] = await pool.query(
-            'SELECT id, nome, email FROM usuarios WHERE id = ?',
-            [req.params.id]
-        );
+        const user = await User.findById(req.params.id).select('id nome email');
+        if (!user) return res.status(404).json({ error: 'Usuário não encontrado' });
 
-        if (rows.length === 0) return res.status(404).json({ error: 'Usuário não encontrado' });
-
-        res.json(rows[0]);
+        res.json(user);
     } catch (error) {
         res.status(500).json({ error: 'Erro ao buscar perfil' });
     }
 });
 
-// Registro
+// Registro (Cadastro)
 router.post('/register', async (req, res) => {
-    const { name, email, password } = req.body;
+    const { name, email, password } = req.body; // Atenção: no seu app mobile você usa 'name' ou 'nome'? Mantive 'name' como estava no seu código original
+    
     if (!name || !email || !password) return res.status(400).json({ error: 'Campos obrigatórios.' });
     if (password.length < 6) return res.status(400).json({ error: 'Senha deve ter min 6 caracteres.' });
 
     try {
-        const [existing] = await pool.query("SELECT * FROM usuarios WHERE email = ?", [email]);
-        if (existing.length > 0) return res.status(409).json({ error: 'Email já cadastrado.' });
+        // 1. Verifica se já existe
+        if (await User.findOne({ email })) {
+            return res.status(400).json({ error: 'Email já cadastrado.' });
+        }
 
+        // 2. Criptografa senha
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(password, salt);
 
-        await pool.query("INSERT INTO usuarios (nome, email, senha) VALUES (?, ?, ?)", [name, email, hashedPassword]);
-        res.status(201).json({ message: 'Usuário cadastrado!' });
+        // 3. Cria usuário no MongoDB
+        const user = await User.create({
+            nome: name,
+            email,
+            senha: hashedPassword
+        });
+
+        res.status(201).json({ message: 'Usuário cadastrado com sucesso!', userId: user._id });
     } catch (error) {
         console.error(error);
-        res.status(500).json({ error: 'Erro interno.' });
+        res.status(500).json({ error: 'Erro interno no cadastro.' });
     }
 });
 
@@ -64,23 +72,30 @@ router.post('/login', async (req, res) => {
     if (!email || !password) return res.status(400).json({ error: 'Campos obrigatórios.' });
 
     try {
-        const [users] = await pool.query("SELECT * FROM usuarios WHERE email = ?", [email]);
-        if (users.length === 0) return res.status(401).json({ error: 'Credenciais inválidas.' });
+        // 1. Busca usuário e pede a senha (+senha)
+        const user = await User.findOne({ email }).select('+senha');
+        
+        if (!user) return res.status(400).json({ error: 'Credenciais inválidas.' });
 
-        const user = users[0];
+        // 2. Compara senhas
         const isMatch = await bcrypt.compare(password, user.senha);
-        if (!isMatch) return res.status(401).json({ error: 'Credenciais inválidas.' });
+        if (!isMatch) return res.status(400).json({ error: 'Credenciais inválidas.' });
 
-        const token = jwt.sign({ id: user.id, email: user.email }, process.env.JWT_SECRET, { expiresIn: '7d' });
+        // 3. Gera Token
+        const token = jwt.sign(
+            { id: user._id, email: user.email }, 
+            process.env.JWT_SECRET || 'segredo_padrao', // Use .env em produção!
+            { expiresIn: '7d' }
+        );
 
         res.json({
             message: 'Login bem-sucedido!',
             token,
-            user: { id: user.id, nome: user.nome, email: user.email }
+            user: { id: user._id, nome: user.nome, email: user.email }
         });
     } catch (error) {
         console.error(error);
-        res.status(500).json({ error: 'Erro interno.' });
+        res.status(500).json({ error: 'Erro interno no login.' });
     }
 });
 

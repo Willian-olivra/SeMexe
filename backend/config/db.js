@@ -1,24 +1,15 @@
-require('dotenv').config();
-const mysql = require('mysql2/promise');
+const mongoose = require('mongoose');
 
-const pool = mysql.createPool({
-  host: process.env.DB_HOST || 'localhost',
-  user: process.env.DB_USER || 'root',
-  password: process.env.DB_PASSWORD || 'senacrs',
-  database: process.env.DB_NAME || 'se_mexe',
-  waitForConnections: true,
-  connectionLimit: 10,
-  queueLimit: 0
-});
+const connectDB = async () => {
+    try {
+        // Ele busca o MONGO_URI lá do arquivo .env
+        const conn = await mongoose.connect(process.env.MONGO_URI);
+        
+        console.log(`MongoDB Conectado: ${conn.connection.host}`);
+    } catch (error) {
+        console.error(`Erro ao conectar no MongoDB: ${error.message}`);
+        process.exit(1);
+    }
+};
 
-// Testar conexão
-pool.getConnection()
-  .then(connection => {
-    console.log('Conectado ao MySQL com sucesso!');
-    connection.release();
-  })
-  .catch(err => {
-    console.error('Erro ao conectar ao MySQL:', err.message);
-  });
-
-module.exports = pool;
+module.exports = connectDB;
