@@ -62,7 +62,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function renderizarAtividades(atividades) {
         if (!eventList) return;
         
-        // --- CÓDIGO DE DEPURAÇÃO (AQUI ESTÁ O QUE VAI NOS AJUDAR) ---
+        // --- CÓDIGO DE DEPURAÇÃO (MANTIDO) ---
         if (atividades.length > 0) {
             console.log("🔍 --- INÍCIO DA INSPEÇÃO ---");
             console.log("🔍 OBJETO COMPLETO:", atividades[0]);
@@ -92,23 +92,24 @@ document.addEventListener('DOMContentLoaded', () => {
             const linkHref = atividadeId ? `atividade.html?id=${atividadeId}` : '#';
             if (!atividadeId) console.error("❌ ERRO: Atividade sem ID gerando link quebrado!", a);
 
+            // ADICIONEI capitalize NAS CLASSES ABAIXO (Título, Esporte, Local e Org)
             return `
                 <article class="bg-dark-surface border border-gray-800 rounded-xl shadow-lg hover:-translate-y-2 hover:border-neon-blue/50 transition duration-300 flex flex-col h-full">
                     <div class="p-5 border-b border-gray-800 flex items-center gap-4 bg-black/20">
                         <i class="${icone} text-3xl text-neon-blue"></i>
                         <div class="flex-1 min-w-0">
-                            <h3 class="text-xl font-bold text-white truncate" title="${a.titulo}">${a.titulo}</h3>
+                            <h3 class="text-xl font-bold text-white truncate capitalize" title="${a.titulo}">${a.titulo}</h3>
                             ${iconeVisibilidade}
                         </div>
                     </div>
                     <div class="p-5 flex-grow space-y-3">
-                        <p class="text-gray-400 flex items-center gap-3"><i class="fa-solid fa-futbol w-5 text-gray-600"></i> ${a.esporte}</p>
-                        <p class="text-gray-400 flex items-center gap-3"><i class="fa-solid fa-location-dot w-5 text-gray-600"></i> ${a.local}</p>
+                        <p class="text-gray-400 flex items-center gap-3 capitalize"><i class="fa-solid fa-futbol w-5 text-gray-600"></i> ${a.esporte}</p>
+                        <p class="text-gray-400 flex items-center gap-3 capitalize"><i class="fa-solid fa-location-dot w-5 text-gray-600"></i> ${a.local}</p>
                         <p class="text-gray-400 flex items-center gap-3"><i class="fa-solid fa-calendar-days w-5 text-gray-600"></i> ${dataF}</p>
                         <p class="text-gray-400 flex items-center gap-3">
                             <i class="fa-solid fa-user w-5 text-gray-600"></i> 
                             <span class="text-sm">Org: 
-                                <a href="perfilUsuario.html?id=${a.id_usuario}" class="text-white hover:text-neon-blue hover:underline transition font-bold">
+                                <a href="perfilUsuario.html?id=${a.id_usuario}" class="text-white hover:text-neon-blue hover:underline transition font-bold capitalize">
                                     ${a.criador_nome || 'Anônimo'}
                                 </a>
                             </span>

@@ -20,7 +20,6 @@ document.addEventListener("DOMContentLoaded", async () => {
         const atividade = await resAtividade.json();
 
         // CORREÇÃO CRÍTICA: Garante que o objeto atividade tenha um ID válido.
-        // Se o banco não retornou 'id', usamos o ID que veio da URL (que sabemos que é válido).
         if (!atividade.id) {
             atividade.id = id;
         }
@@ -40,22 +39,26 @@ document.addEventListener("DOMContentLoaded", async () => {
 });
 
 function renderizarAtividade(atividade) {
-    // Adicionei verificação de segurança para elementos nulos
     const container = document.getElementById('atividade-info-container');
     if (!container) return;
 
-    document.getElementById("titulo-atividade").innerText = atividade.titulo || "Sem Título";
+    // ADICIONEI capitalize NA CLASSE DO TÍTULO VIA JS
+    const tituloEl = document.getElementById("titulo-atividade");
+    tituloEl.innerText = atividade.titulo || "Sem Título";
+    tituloEl.classList.add('capitalize');
+
     const iconeEsporte = getIconeEsporte(atividade.esporte);
     const dataFormatada = formatarDataHora(atividade.data_hora);
 
+    // ADICIONADO capitalize NO ESPORTE, LOCAL E ORGANIZADOR
     const html = `
         <div class="bg-dark-highlight p-4 rounded-lg flex items-start gap-4 border border-gray-700">
             <i class="${iconeEsporte} text-2xl text-neon-blue mt-1"></i>
-            <div><strong class="block text-gray-400 text-xs uppercase">Esporte</strong><span class="text-white text-lg">${atividade.esporte || '-'}</span></div>
+            <div><strong class="block text-gray-400 text-xs uppercase">Esporte</strong><span class="text-white text-lg capitalize">${atividade.esporte || '-'}</span></div>
         </div>
         <div class="bg-dark-highlight p-4 rounded-lg flex items-start gap-4 border border-gray-700">
             <i class="fa-solid fa-location-dot text-2xl text-neon-blue mt-1"></i>
-            <div><strong class="block text-gray-400 text-xs uppercase">Local</strong><span class="text-white text-lg">${atividade.local || '-'}</span></div>
+            <div><strong class="block text-gray-400 text-xs uppercase">Local</strong><span class="text-white text-lg capitalize">${atividade.local || '-'}</span></div>
         </div>
         <div class="bg-dark-highlight p-4 rounded-lg flex items-start gap-4 border border-gray-700">
             <i class="fa-solid fa-calendar-days text-2xl text-neon-blue mt-1"></i>
@@ -67,7 +70,7 @@ function renderizarAtividade(atividade) {
         </div>
         <div class="bg-dark-highlight p-4 rounded-lg flex items-start gap-4 border border-gray-700 col-span-1 md:col-span-2">
             <i class="fa-solid fa-user-astronaut text-2xl text-neon-blue mt-1"></i>
-            <div><strong class="block text-gray-400 text-xs uppercase">Organizador</strong><span class="text-white text-lg">${atividade.criador_nome || 'Anônimo'}</span></div>
+            <div><strong class="block text-gray-400 text-xs uppercase">Organizador</strong><span class="text-white text-lg capitalize">${atividade.criador_nome || 'Anônimo'}</span></div>
         </div>
     `;
     container.innerHTML = html;
