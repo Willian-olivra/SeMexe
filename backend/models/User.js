@@ -7,9 +7,13 @@ const UserSchema = new mongoose.Schema({
     avatar: { type: String, default: 'fa-solid fa-user' },
     data_criacao: { type: Date, default: Date.now },
 
-    // --- NOVOS CAMPOS PARA RECUPERAÇÃO DE SENHA ---
-    resetPasswordToken: { type: String },
-    resetPasswordExpires: { type: Date }
+    // Recuperação de Senha
+    resetPasswordToken: String,
+    resetPasswordExpires: Date,
+
+    // --- NOVO: VERIFICAÇÃO DE DUAS ETAPAS (2FA) ---
+    twoFactorCode: String,
+    twoFactorExpires: Date
 });
 
 module.exports = mongoose.model('User', UserSchema);

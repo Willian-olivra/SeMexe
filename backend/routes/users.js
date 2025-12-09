@@ -3,15 +3,11 @@ const router = express.Router();
 const User = require('../models/User');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const crypto = require('crypto'); // Nativo do Node.js
+const crypto = require('crypto');
 const authMiddleware = require('../middleware/auth');
 const sendEmail = require('../utils/sendEmail');
 
-// REGEX PARA SENHA FORTE:
-// Mínimo 6 chars, 1 maiúscula, 1 número e 1 símbolo especial
-const passwordRegex = /^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{6,}$/;
-
-// Rota de Busca (Mantida igual)
+// --- BUSCA DE USUÁRIOS ---
 router.get('/buscar', async (req, res) => {
     const termo = req.query.q;
     if (!termo || termo.length < 3) return res.json([]);
@@ -21,15 +17,14 @@ router.get('/buscar', async (req, res) => {
         }).select('id nome email avatar').limit(10);
         res.json(usuarios);
     } catch (error) {
-        console.error(error);
         res.status(500).json({ error: 'Erro na busca' });
     }
 });
 
-// Perfil Público (Mantido igual)
+// --- PERFIL PÚBLICO ---
 router.get('/:id', async (req, res) => {
     try {
-        const usuario = await User.findById(req.params.id).select('-senha');
+        const usuario = await User.findById(req.params.id).select('-senha -twoFactorCode');
         if (!usuario) return res.status(404).json({ error: 'Usuário não encontrado' });
         res.json(usuario);
     } catch (error) {
@@ -37,17 +32,15 @@ router.get('/:id', async (req, res) => {
     }
 });
 
-// --- REGISTRO (ATUALIZADO COM SENHA FORTE) ---
+// --- REGISTRO ---
 router.post('/register', async (req, res) => {
     const { name, email, password } = req.body;
-    
     if (!name || !email || !password) return res.status(400).json({ error: 'Campos obrigatórios.' });
 
-    // Validação de Senha Forte
+    // Senha Forte
+    const passwordRegex = /^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{6,}$/;
     if (!passwordRegex.test(password)) {
-        return res.status(400).json({ 
-            error: 'Senha fraca! Use pelo menos: 1 maiúscula, 1 número e 1 símbolo (@$!%*?&).' 
-        });
+        return res.status(400).json({ error: 'Senha fraca: use Maiúscula, Número e Símbolo.' });
     }
 
     try {
@@ -67,12 +60,11 @@ router.post('/register', async (req, res) => {
         await newUser.save();
         res.status(201).json({ message: 'Usuário cadastrado!' });
     } catch (error) {
-        console.error(error);
         res.status(500).json({ error: 'Erro interno.' });
     }
 });
 
-// Login (Mantido igual)
+// --- LOGIN (PASSO 1: SENHA + ENVIO DE CÓDIGO) ---
 router.post('/login', async (req, res) => {
     const { email, password } = req.body;
     try {
@@ -82,19 +74,84 @@ router.post('/login', async (req, res) => {
         const isMatch = await bcrypt.compare(password, user.senha);
         if (!isMatch) return res.status(401).json({ error: 'Credenciais inválidas.' });
 
-        const token = jwt.sign({ id: user._id, email: user.email }, process.env.JWT_SECRET, { expiresIn: '7d' });
+        // --- GERA CÓDIGO 2FA ---
+        const code = Math.floor(100000 + Math.random() * 900000).toString(); // 6 dígitos
 
-        res.json({
-            message: 'Login bem-sucedido!',
-            token,
-            user: { id: user._id, nome: user.nome, email: user.email, avatar: user.avatar }
-        });
+        user.twoFactorCode = code;
+        user.twoFactorExpires = Date.now() + 600000; // Valido por 10 min
+        await user.save();
+
+        const message = `
+            <div style="font-family: Arial, sans-serif; text-align: center; color: #333;">
+                <h1>Código de Verificação</h1>
+                <p>Seu código para acessar o Se Mexe é:</p>
+                <div style="background: #000; color: #00E5FF; font-size: 32px; letter-spacing: 5px; padding: 20px; border-radius: 10px; display: inline-block; margin: 10px 0;">
+                    <b>${code}</b>
+                </div>
+                <p>Este código expira em 10 minutos.</p>
+            </div>
+        `;
+
+        try {
+            await sendEmail({
+                email: user.email,
+                subject: 'Se Mexe - Código de Acesso',
+                message
+            });
+
+            // Responde para o Frontend que precisa do código
+            res.json({ 
+                require2FA: true, 
+                email: user.email,
+                message: 'Código enviado para o e-mail!' 
+            });
+
+        } catch (err) {
+            console.error(err);
+            return res.status(500).json({ error: 'Erro ao enviar e-mail de código.' });
+        }
+
     } catch (error) {
+        console.error(error);
         res.status(500).json({ error: 'Erro interno.' });
     }
 });
 
-// Atualizar Perfil (Mantido igual)
+// --- LOGIN (PASSO 2: VALIDAR CÓDIGO) ---
+router.post('/login/verify', async (req, res) => {
+    const { email, code } = req.body;
+
+    try {
+        const user = await User.findOne({ 
+            email, 
+            twoFactorCode: code,
+            twoFactorExpires: { $gt: Date.now() } 
+        });
+
+        if (!user) {
+            return res.status(400).json({ error: 'Código inválido ou expirado.' });
+        }
+
+        // Limpa o código usado
+        user.twoFactorCode = undefined;
+        user.twoFactorExpires = undefined;
+        await user.save();
+
+        // Gera o Token JWT Final
+        const token = jwt.sign({ id: user._id, email: user.email }, process.env.JWT_SECRET, { expiresIn: '7d' });
+
+        res.json({
+            message: 'Login aprovado!',
+            token,
+            user: { id: user._id, nome: user.nome, email: user.email, avatar: user.avatar }
+        });
+
+    } catch (error) {
+        res.status(500).json({ error: 'Erro ao verificar código.' });
+    }
+});
+
+// --- ATUALIZAR PERFIL ---
 router.put('/perfil', authMiddleware, async (req, res) => {
     const { nome, avatar } = req.body;
     try {
@@ -105,84 +162,58 @@ router.put('/perfil', authMiddleware, async (req, res) => {
     }
 });
 
-// --- NOVAS ROTAS: RECUPERAÇÃO DE SENHA ---
-
-// 1. Esqueci a Senha
+// --- ESQUECI MINHA SENHA ---
 router.post('/forgot-password', async (req, res) => {
     const { email } = req.body;
     try {
         const user = await User.findOne({ email });
         if (!user) return res.status(404).json({ error: 'Email não encontrado.' });
 
-        // Gera token
         const resetToken = crypto.randomBytes(20).toString('hex');
         
-        // Hash do token para salvar no banco (segurança extra)
-        const resetPasswordToken = crypto.createHash('sha256').update(resetToken).digest('hex');
-
-        // Salva no banco (token + expiração de 1 hora)
-        user.resetPasswordToken = resetPasswordToken;
-        user.resetPasswordExpires = Date.now() + 3600000; // 1 hora
+        user.resetPasswordToken = resetToken;
+        user.resetPasswordExpires = Date.now() + 3600000;
         await user.save();
 
-        // Link que vai no email (aponta para o seu HTML)
         const resetUrl = `${process.env.FRONTEND_URL}/redefinirSenha.html?token=${resetToken}`;
 
         const message = `
-            <h1>Recuperação de Senha</h1>
-            <p>Você solicitou a troca de senha no Se Mexe.</p>
-            <p>Clique no link abaixo para criar uma nova senha:</p>
-            <a href="${resetUrl}" style="background:#00E5FF; color:black; padding:10px; border-radius:5px; text-decoration:none; font-weight:bold;">Redefinir Senha</a>
+            <p>Clique no link para redefinir sua senha:</p>
+            <a href="${resetUrl}">Redefinir Senha</a>
         `;
 
-        try {
-            await sendEmail({
-                email: user.email,
-                subject: 'Se Mexe - Recuperação de Senha',
-                message
-            });
-            res.json({ message: 'Email enviado!' });
-        } catch (err) {
-            user.resetPasswordToken = undefined;
-            user.resetPasswordExpires = undefined;
-            await user.save();
-            return res.status(500).json({ error: 'Erro ao enviar email.' });
-        }
+        await sendEmail({
+            email: user.email,
+            subject: 'Se Mexe - Recuperar Senha',
+            message
+        });
+        res.json({ message: 'Email enviado!' });
     } catch (error) {
         res.status(500).json({ error: 'Erro interno.' });
     }
 });
 
-// 2. Redefinir Senha (Reset)
+// --- REDEFINIR SENHA ---
 router.post('/reset-password/:token', async (req, res) => {
-    const resetPasswordToken = crypto.createHash('sha256').update(req.params.token).digest('hex');
-
     try {
         const user = await User.findOne({
-            resetPasswordToken,
-            resetPasswordExpires: { $gt: Date.now() } // Verifica se não expirou
+            resetPasswordToken: req.params.token,
+            resetPasswordExpires: { $gt: Date.now() }
         });
 
-        if (!user) return res.status(400).json({ error: 'Token inválido ou expirado.' });
+        if (!user) return res.status(400).json({ error: 'Token inválido.' });
 
         const { password } = req.body;
-        
-        // Valida força da senha de novo
-        if (!passwordRegex.test(password)) {
-            return res.status(400).json({ error: 'Senha fraca! Use maiúscula, número e símbolo.' });
-        }
+        const passwordRegex = /^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{6,}$/;
+        if (!passwordRegex.test(password)) return res.status(400).json({ error: 'Senha fraca.' });
 
-        // Criptografa nova senha
         const salt = await bcrypt.genSalt(10);
         user.senha = await bcrypt.hash(password, salt);
-
-        // Limpa tokens
         user.resetPasswordToken = undefined;
         user.resetPasswordExpires = undefined;
         await user.save();
 
-        res.json({ message: 'Senha alterada com sucesso!' });
-
+        res.json({ message: 'Senha alterada!' });
     } catch (error) {
         res.status(500).json({ error: 'Erro interno.' });
     }
