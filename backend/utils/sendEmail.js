@@ -1,9 +1,8 @@
 const nodemailer = require('nodemailer');
 
 const sendEmail = async (options) => {
-    // Cria o "transporte" (o carteiro)
     const transporter = nodemailer.createTransport({
-        service: 'gmail', // Se usar outro, mude aqui
+        service: 'gmail',
         host: process.env.EMAIL_HOST,
         port: process.env.EMAIL_PORT,
         auth: {
@@ -12,7 +11,6 @@ const sendEmail = async (options) => {
         }
     });
 
-    // Configura o e-mail
     const message = {
         from: `Se Mexe <${process.env.EMAIL_USER}>`,
         to: options.email,
@@ -20,7 +18,6 @@ const sendEmail = async (options) => {
         html: options.message
     };
 
-    // Envia
     await transporter.sendMail(message);
 };
 
