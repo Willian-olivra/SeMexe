@@ -27,12 +27,38 @@ app.use('/api/users', require('./routes/users'));
 app.use('/api/atividades', require('./routes/atividades'));
 app.use('/api/amigos', require('./routes/amigos'));
 app.use('/api/chat', require('./routes/chat')); // Rota nova que criamos acima!
-
+app.use('/api/fairplay', require('./routes/fairplay'));
 // --- SOCKET.IO (Tempo Real) ---
 io.on('connection', (socket) => {
     // Tenta pegar o token enviado pelo frontend na conexão
     const token = socket.handshake.auth.token;
     let userId = null;
+    // O usuário entra na sala da atividade quando abre a página
+    socket.on('entrar_sala_atividade', (atividadeId) => {
+        const sala = `atividade_${atividadeId}`;
+        socket.join(sala);
+        console.log(`🔌 User entrou na sala: ${sala}`);
+    });
+
+    // O usuário sai da sala (opcional, mas bom para limpeza)
+    socket.on('sair_sala_atividade', (atividadeId) => {
+        const sala = `atividade_${atividadeId}`;
+        socket.leave(sala);
+    });
+
+    // Recebe mensagem de grupo e retransmite para a sala
+    socket.on('enviar_msg_atividade', (data) => {
+        const { atividadeId, texto, remetente, data_envio } = data;
+        const sala = `atividade_${atividadeId}`;
+
+        // Envia para TODOS na sala (inclusive quem mandou)
+        io.to(sala).emit('receber_msg_atividade', {
+            atividadeId,
+            texto,
+            remetente, // Objeto com nome/avatar
+            data_envio
+        });
+    });
 
     if (token) {
         try {
@@ -67,6 +93,37 @@ io.on('connection', (socket) => {
             destinatarioId: destinatarioId,
             conteudo: texto,
             data_envio: new Date()
+        });
+    });
+    socket.on('enviar_mensagem', (data) => {
+        // ... (código existente do chat privado) ...
+        const { destinatarioId, texto, remetenteId } = data;
+        io.to(destinatarioId.toString()).emit('mensagem_recebida', {
+            remetenteId: remetenteId,
+            destinatarioId: destinatarioId,
+            conteudo: texto,
+            data_envio: new Date()
+        });
+    });
+
+    // 1. Entrar na sala específica da atividade
+    socket.on('entrar_sala_atividade', (atividadeId) => {
+        const sala = `atividade_${atividadeId}`;
+        socket.join(sala);
+        // console.log(`User entrou na sala: ${sala}`);
+    });
+
+    // 2. Receber mensagem e espalhar para todos na sala
+    socket.on('enviar_msg_atividade', (data) => {
+        const { atividadeId, texto, remetente, data_envio } = data;
+        const sala = `atividade_${atividadeId}`;
+
+        // Envia para TODOS na sala da atividade (io.to)
+        io.to(sala).emit('receber_msg_atividade', {
+            atividadeId,
+            texto,
+            remetente, // O frontend manda o objeto { nome, avatar }
+            data_envio: data_envio || new Date()
         });
     });
 

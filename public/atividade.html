@@ -76,13 +76,39 @@
           <h3 class="text-xl font-bold text-white mb-4 flex items-center gap-2"><i class="fa-solid fa-map-location-dot text-neon-blue"></i> Localização</h3>
           <div id="map" class="h-96 w-full rounded-lg shadow-inner z-0"></div>
         </div>
+        <div id="chat-atividade-container" class="bg-dark-surface border border-gray-800 rounded-xl p-6 mt-8 shadow-lg hidden">
+            <div class="flex justify-between items-center mb-4 border-b border-gray-700 pb-2">
+                <h3 class="text-xl font-bold text-white flex items-center gap-2">
+                    <i class="fa-regular fa-comments text-neon-blue"></i> Chat do Grupo
+                </h3>
+                <span id="chat-status-badge" class="text-xs font-bold px-2 py-1 rounded bg-green-500/20 text-green-400 border border-green-500">
+                    Ativo
+                </span>
+            </div>
+
+            <div id="box-mensagens" class="bg-[#0a0a0a] rounded-lg p-4 h-64 overflow-y-auto mb-4 border border-gray-800 space-y-3">
+                <p class="text-center text-gray-600 text-sm">Carregando mensagens...</p>
+            </div>
+
+            <form id="form-chat-atividade" class="flex gap-2">
+                <input type="text" id="input-msg-atividade" placeholder="Discuta detalhes da atividade..." autocomplete="off"
+                    class="flex-1 bg-dark-highlight border border-gray-700 text-white rounded-lg px-4 py-3 focus:outline-none focus:border-neon-blue transition">
+                <button type="submit" class="bg-neon-blue text-black px-6 rounded-lg font-bold hover:bg-white transition">
+                    <i class="fa-solid fa-paper-plane"></i>
+                </button>
+            </form>
+            
+            <p id="aviso-expiracao" class="hidden text-center text-red-400 text-sm mt-2 font-bold bg-red-500/10 p-2 rounded border border-red-500/30">
+                <i class="fa-solid fa-lock"></i> Chat encerrado (24h após o evento).
+            </p>
+        </div>
     </div>
   </main>
 
   <footer class="bg-black border-t border-gray-900 text-white py-8 mt-auto text-center">
     <p class="text-gray-500 text-sm">© 2025 Se Mexe. Direitos Reservados.</p>
   </footer>
-
+  <script src="/socket.io/socket.io.js"></script>
   <script src="js/utils.js"></script>
   <script src="js/atividade.js"></script>
   <script>
@@ -96,5 +122,58 @@
           });
       }
   </script>
+  <div id="modal-fairplay" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-[100] hidden flex items-center justify-center p-4 opacity-0 transition-opacity duration-300">
+    <div class="bg-dark-surface border border-gray-700 rounded-xl shadow-2xl p-6 w-full max-w-sm transform scale-95 transition-transform duration-300">
+        
+        <h3 class="text-xl font-bold text-white mb-4 text-center">
+            Avaliar <span id="fp-nome-jogador" class="text-neon-blue">Jogador</span>
+        </h3>
+
+        <form id="form-fairplay" class="space-y-4">
+            <input type="hidden" id="fp-avaliado-id">
+            
+            <div class="text-center mb-4">
+                <p class="text-gray-300 text-sm mb-2">O jogador compareceu?</p>
+                <div class="flex justify-center gap-4">
+                    <label class="cursor-pointer">
+                        <input type="radio" name="fp-compareceu" value="true" checked class="peer sr-only">
+                        <div class="bg-gray-800 border border-gray-600 px-4 py-2 rounded text-gray-400 peer-checked:bg-green-500/20 peer-checked:text-green-400 peer-checked:border-green-500 transition">Sim</div>
+                    </label>
+                    <label class="cursor-pointer">
+                        <input type="radio" name="fp-compareceu" value="false" class="peer sr-only">
+                        <div class="bg-gray-800 border border-gray-600 px-4 py-2 rounded text-gray-400 peer-checked:bg-red-500/20 peer-checked:text-red-400 peer-checked:border-red-500 transition">Não</div>
+                    </label>
+                </div>
+            </div>
+
+            <div id="fp-criterios">
+                <div class="mb-3">
+                    <label class="block text-gray-400 text-xs uppercase font-bold mb-1">Foi respeitoso?</label>
+                    <input type="range" id="fp-respeito" min="1" max="5" value="5" class="w-full accent-neon-blue h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer">
+                    <div class="flex justify-between text-xs text-gray-500 mt-1">
+                        <span>Péssimo</span>
+                        <span>Excelente</span>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="block text-gray-400 text-xs uppercase font-bold mb-1">Jogou Limpo?</label>
+                    <input type="range" id="fp-jogolimpo" min="1" max="5" value="5" class="w-full accent-neon-pink h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer">
+                    <div class="flex justify-between text-xs text-gray-500 mt-1">
+                        <span>Desleal</span>
+                        <span>Exemplar</span>
+                    </div>
+                </div>
+            </div>
+
+            <textarea id="fp-comentario" rows="2" placeholder="Comentário opcional..." class="w-full bg-dark-highlight border border-gray-700 text-white text-sm rounded p-2 focus:border-neon-blue outline-none"></textarea>
+
+            <div class="flex gap-3 pt-2">
+                <button type="button" onclick="fecharModalFairplay()" class="flex-1 bg-transparent border border-gray-600 text-gray-300 py-2 rounded hover:bg-gray-800 transition text-sm font-bold">Cancelar</button>
+                <button type="submit" class="flex-1 bg-neon-blue text-black font-bold py-2 rounded hover:bg-white transition shadow-lg text-sm">Enviar</button>
+            </div>
+        </form>
+    </div>
+</div>
 </body>
 </html>

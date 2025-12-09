@@ -54,5 +54,73 @@ router.post('/enviar', auth, async (req, res) => {
         res.status(500).json({ error: 'Erro ao enviar mensagem' });
     }
 });
+const Activity = require('../models/Activity'); // Importe o Activity no topo
+
+// 3. Buscar Histórico da Atividade
+// GET /api/chat/atividade/:id
+router.get('/atividade/:id', auth, async (req, res) => {
+    try {
+        const atividadeId = req.params.id;
+        
+        // Verifica se atividade existe para calcular expiração
+        const atividade = await Activity.findById(atividadeId);
+        if (!atividade) return res.status(404).json({ error: 'Atividade não encontrada' });
+
+        // Calcula expiração (Data da atividade + 24h)
+        const dataLimite = new Date(atividade.data_hora);
+        dataLimite.setHours(dataLimite.getHours() + 24);
+        
+        const expirado = new Date() > dataLimite;
+
+        const mensagens = await Mensagem.find({ atividade: atividadeId })
+            .sort({ data_envio: 1 })
+            .populate('remetente', 'nome avatar');
+
+        res.json({ 
+            mensagens, 
+            expirado,
+            data_limite: dataLimite 
+        });
+
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Erro ao buscar chat.' });
+    }
+});
+
+// 4. Enviar Mensagem na Atividade
+// POST /api/chat/atividade/enviar
+router.post('/atividade/enviar', auth, async (req, res) => {
+    try {
+        const { atividadeId, texto } = req.body;
+
+        const atividade = await Activity.findById(atividadeId);
+        if (!atividade) return res.status(404).json({ error: 'Atividade não encontrada' });
+
+        // --- VALIDAÇÃO DE 24 HORAS ---
+        const dataLimite = new Date(atividade.data_hora);
+        dataLimite.setHours(dataLimite.getHours() + 24);
+
+        if (new Date() > dataLimite) {
+            return res.status(403).json({ error: 'Chat encerrado (prazo de 24h expirou).' });
+        }
+
+        const novaMensagem = await Mensagem.create({
+            remetente: req.user.id,
+            atividade: atividadeId, // Salva o ID da atividade
+            destinatario: null,     // É grupo, não tem destinatário único
+            texto
+        });
+
+        // Popula para retornar bonito pro front
+        await novaMensagem.populate('remetente', 'nome avatar');
+
+        res.status(201).json(novaMensagem);
+
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Erro ao enviar.' });
+    }
+});
 
 module.exports = router;

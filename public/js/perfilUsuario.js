@@ -77,6 +77,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // --- 2. CARREGAR DADOS DO USUÁRIO ---
     try {
         const res = await fetch(`/api/users/${userId}`);
+        
         if (!res.ok) throw new Error('Usuário não encontrado');
         
         const user = await res.json();
@@ -97,6 +98,21 @@ document.addEventListener('DOMContentLoaded', async () => {
             // Verifica se já são amigos
             verificarStatusAmizade(user.id || user._id);
         }
+        const elNota = document.getElementById('perfil-fairplay');
+    const elFaltas = document.getElementById('perfil-faltas');
+
+    if (elNota && user.fairplayNota !== undefined) {
+        elNota.innerText = user.fairplayNota.toFixed(1); // Ex: 4.8
+        
+        // Cor dinâmica
+        if(user.fairplayNota >= 4.5) elNota.className = "block text-2xl font-bold text-green-400";
+        else if(user.fairplayNota >= 3) elNota.className = "block text-2xl font-bold text-yellow-400";
+        else elNota.className = "block text-2xl font-bold text-red-500";
+    }
+
+    if (elFaltas && user.faltas !== undefined) {
+        elFaltas.innerText = user.faltas;
+    }
 
     } catch (error) {
         console.error(error);
