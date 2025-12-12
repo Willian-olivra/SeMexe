@@ -1,21 +1,138 @@
 /**
- * SISTEMA DE NOTIFICAÇÕES E MODAIS - DARK NEON
+ * SISTEMA GLOBAL: Utils, Menu, Notificações e Navegação
  */
 
-const styleSheet = document.createElement("style");
-styleSheet.innerText = `
-  @keyframes slideInRight { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
-  @keyframes fadeOut { to { opacity: 0; transform: translateX(100%); } }
-  @keyframes popIn { from { transform: scale(0.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-  .toast-enter { animation: slideInRight 0.3s ease-out forwards; }
-  .toast-exit { animation: fadeOut 0.3s ease-in forwards; }
-  .modal-enter { animation: popIn 0.2s ease-out forwards; }
-`;
-document.head.appendChild(styleSheet);
+document.addEventListener("DOMContentLoaded", async () => {
+    // 1. Injeta CSS Global (Animações e Ajustes de Layout)
+    const styleSheet = document.createElement("style");
+    styleSheet.innerText = `
+        @keyframes slideInRight { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        @keyframes fadeOut { to { opacity: 0; transform: translateX(100%); } }
+        .toast-enter { animation: slideInRight 0.3s ease-out forwards; }
+        
+        /* Ajuste para iPhone X+ (Safe Area) */
+        .pb-safe { padding-bottom: env(safe-area-inset-bottom, 20px); }
+        
+        /* Garante espaço para o Bottom Nav não cobrir o conteúdo */
+        body.has-bottom-nav { padding-bottom: 90px; }
+    `;
+    document.head.appendChild(styleSheet);
 
-// --- TOASTS ---
+    // 2. Inicializações
+    if (typeof atualizarMenu === 'function') atualizarMenu();
+});
 
-function getToastContainer() {
+// --- MENUS (Topo e Bottom) ---
+
+function atualizarMenu() {
+    const navMenu = document.getElementById('nav-menu');
+    const usuario = getUsuarioLogado();
+    const logado = !!(localStorage.getItem('token') && usuario);
+
+    // 1. Menu Superior (Desktop)
+    if (navMenu) {
+        if (logado) {
+            navMenu.innerHTML = `
+                <li><a href="perfil.html" class="text-neon-blue font-bold flex items-center gap-2"><i class="fa-solid fa-user-astronaut"></i> ${usuario.nome.split(' ')[0]}</a></li>
+                <li><a href="minhasAtividades.html" class="text-gray-300 hover:text-neon-blue">Minhas Atividades</a></li>
+                <li><a href="criarAtividade.html" class="text-gray-300 hover:text-neon-blue">Criar Atividade</a></li>
+                <li><a href="#" onclick="logout()" class="text-neon-pink hover:text-white font-bold border border-neon-pink px-3 py-1 rounded">Sair</a></li>
+            `;
+        } else {
+            navMenu.innerHTML = `
+                <li><a href="cadastro.html" class="text-gray-300 hover:text-neon-blue">Cadastrar</a></li>
+                <li><a href="login.html" class="bg-neon-blue text-black px-4 py-2 rounded font-bold hover:bg-white">Login</a></li>
+            `;
+        }
+    }
+
+    // 2. Menu Inferior (Mobile) - Injeta apenas se não existir
+    if (!document.getElementById('mobile-bottom-nav')) {
+        renderizarBottomNav(logado);
+    }
+}
+
+function renderizarBottomNav(logado) {
+    const nav = document.createElement('nav');
+    nav.id = 'mobile-bottom-nav';
+    // Estilo fixo, com z-index alto e padding para safe area
+    nav.className = 'fixed bottom-0 left-0 w-full h-16 bg-dark-surface border-t border-gray-800 z-[99] md:hidden pb-safe';
+
+    // Determina qual aba está ativa para colorir de azul
+    const path = window.location.pathname;
+    const activeClass = (p) => path.includes(p) ? 'text-neon-blue' : 'text-gray-500 hover:text-gray-300';
+
+    if (logado) {
+        nav.innerHTML = `
+            <div class="relative w-full h-full flex justify-between items-center px-6">
+                <div class="flex gap-8">
+                    <a href="index.html" class="flex flex-col items-center gap-1 ${activeClass('index.html')}">
+                        <i class="fa-solid fa-house text-xl"></i>
+                        <span class="text-[10px] font-medium">Início</span>
+                    </a>
+                    <a href="minhasAtividades.html" class="flex flex-col items-center gap-1 ${activeClass('minhasAtividades')}">
+                        <i class="fa-solid fa-calendar-check text-xl"></i>
+                        <span class="text-[10px] font-medium">Minhas</span>
+                    </a>
+                </div>
+
+                <div class="absolute left-1/2 -translate-x-1/2 -top-6">
+                    <a href="criarAtividade.html" class="flex items-center justify-center w-14 h-14 bg-neon-blue rounded-full border-[4px] border-dark-base text-black shadow-[0_0_15px_rgba(0,229,255,0.4)] transform transition hover:scale-110 active:scale-95">
+                        <i class="fa-solid fa-plus text-2xl"></i>
+                    </a>
+                </div>
+
+                <div class="flex gap-8">
+                    <a href="perfil.html" class="flex flex-col items-center gap-1 ${activeClass('perfil')}">
+                        <i class="fa-solid fa-user text-xl"></i>
+                        <span class="text-[10px] font-medium">Perfil</span>
+                    </a>
+                    <a href="#" onclick="logout()" class="flex flex-col items-center gap-1 text-gray-500 hover:text-neon-pink">
+                        <i class="fa-solid fa-right-from-bracket text-xl"></i>
+                        <span class="text-[10px] font-medium">Sair</span>
+                    </a>
+                </div>
+            </div>
+        `;
+    } else {
+        // Visitante (Sem botão central, distribuição uniforme)
+        nav.innerHTML = `
+            <div class="w-full h-full flex justify-around items-center">
+                <a href="index.html" class="flex flex-col items-center gap-1 ${activeClass('index.html')}">
+                    <i class="fa-solid fa-house text-xl"></i>
+                    <span class="text-[10px] font-medium">Início</span>
+                </a>
+                <a href="cadastro.html" class="flex flex-col items-center gap-1 ${activeClass('cadastro')}">
+                    <i class="fa-solid fa-user-plus text-xl"></i>
+                    <span class="text-[10px] font-medium">Cadastrar</span>
+                </a>
+                <a href="login.html" class="flex flex-col items-center gap-1 ${activeClass('login')}">
+                    <i class="fa-solid fa-right-to-bracket text-xl"></i>
+                    <span class="text-[10px] font-medium">Entrar</span>
+                </a>
+            </div>
+        `;
+    }
+
+    document.body.appendChild(nav);
+    document.body.classList.add('has-bottom-nav');
+}
+
+// --- UTILS GERAIS ---
+
+function getUsuarioLogado() {
+    try { return JSON.parse(localStorage.getItem('userInfo')); } catch { return null; }
+}
+
+function logout() {
+    localStorage.clear();
+    showToast('Até logo!', 'info');
+    setTimeout(() => window.location.href = 'index.html', 1000);
+}
+
+// --- TOASTS (Notificações) ---
+
+function showToast(message, type = 'success') {
     let container = document.getElementById('toast-container');
     if (!container) {
         container = document.createElement('div');
@@ -23,60 +140,42 @@ function getToastContainer() {
         container.className = 'fixed top-5 right-5 z-[100] flex flex-col gap-3 pointer-events-none';
         document.body.appendChild(container);
     }
-    return container;
-}
 
-function showToast(message, type = 'success') {
-    const container = getToastContainer();
-    
     const config = {
-        success: { border: 'border-neon-blue', icon: 'fa-check-circle', color: 'text-neon-blue', shadow: 'shadow-[0_0_10px_rgba(0,229,255,0.3)]' },
-        error: { border: 'border-neon-pink', icon: 'fa-circle-exclamation', color: 'text-neon-pink', shadow: 'shadow-[0_0_10px_rgba(255,0,127,0.3)]' },
-        warning: { border: 'border-yellow-400', icon: 'fa-triangle-exclamation', color: 'text-yellow-400', shadow: 'shadow-[0_0_10px_rgba(250,204,21,0.3)]' }
+        success: { border: 'border-neon-blue', icon: 'fa-check-circle', color: 'text-neon-blue' },
+        error: { border: 'border-neon-pink', icon: 'fa-circle-exclamation', color: 'text-neon-pink' },
+        warning: { border: 'border-yellow-400', icon: 'fa-triangle-exclamation', color: 'text-yellow-400' },
+        info: { border: 'border-white', icon: 'fa-info-circle', color: 'text-white' }
     };
-
     const style = config[type] || config.success;
 
     const toast = document.createElement('div');
-    toast.className = `pointer-events-auto min-w-[300px] max-w-sm bg-dark-surface border-l-4 ${style.border} ${style.shadow} text-white p-4 rounded-r-lg rounded-l-sm flex items-center gap-4 shadow-2xl toast-enter`;
-
-    toast.innerHTML = `
-        <i class="fa-solid ${style.icon} ${style.color} text-2xl"></i>
-        <p class="text-sm font-medium flex-1 leading-snug">${message}</p>
-        <button onclick="this.parentElement.remove()" class="text-gray-500 hover:text-white transition p-1"><i class="fa-solid fa-xmark"></i></button>
-    `;
-
+    toast.className = `pointer-events-auto bg-dark-surface border-l-4 ${style.border} text-white p-4 rounded shadow-2xl flex gap-3 items-center toast-enter min-w-[280px] backdrop-blur-md`;
+    toast.innerHTML = `<i class="fa-solid ${style.icon} ${style.color} text-lg"></i> <span class="text-sm font-bold">${message}</span>`;
+    
     container.appendChild(toast);
-    setTimeout(() => {
-        toast.classList.remove('toast-enter');
-        toast.classList.add('toast-exit');
-        toast.addEventListener('animationend', () => toast.remove());
-    }, 4000);
+    setTimeout(() => toast.remove(), 4000);
 }
 
 // --- MODAL DE CONFIRMAÇÃO ---
 
-function showConfirmModal(mensagem, textoConfirmar = 'Confirmar', textoCancelar = 'Cancelar') {
+function showConfirmModal(mensagem, btnSim = 'Confirmar', btnNao = 'Cancelar') {
     return new Promise((resolve) => {
         const overlay = document.createElement('div');
         overlay.className = 'fixed inset-0 bg-black/80 backdrop-blur-sm z-[200] flex items-center justify-center p-4 opacity-0 transition-opacity duration-200';
         
         const modal = document.createElement('div');
-        modal.className = 'bg-dark-surface border border-gray-700 rounded-xl shadow-2xl w-full max-w-sm p-6 transform scale-95 transition-all duration-200 modal-enter text-center';
+        modal.className = 'bg-dark-surface border border-gray-700 rounded-xl shadow-2xl w-full max-w-sm p-6 transform scale-95 transition-all duration-200 text-center';
         
         modal.innerHTML = `
-            <div class="w-16 h-16 bg-dark-highlight rounded-full flex items-center justify-center mx-auto mb-4 border border-gray-600 shadow-inner">
-                <i class="fa-solid fa-question text-3xl text-neon-blue"></i>
+            <div class="w-14 h-14 bg-dark-highlight rounded-full flex items-center justify-center mx-auto mb-4 border border-gray-600">
+                <i class="fa-solid fa-question text-2xl text-neon-blue"></i>
             </div>
-            <h3 class="text-xl font-bold text-white mb-2">Confirmação</h3>
+            <h3 class="text-lg font-bold text-white mb-2">Confirmação</h3>
             <p class="text-gray-400 text-sm mb-6">${mensagem}</p>
             <div class="flex gap-3 justify-center">
-                <button id="btn-cancelar-modal" class="flex-1 bg-transparent border border-gray-600 text-gray-300 py-2.5 rounded-lg hover:bg-gray-800 hover:text-white transition font-medium">
-                    ${textoCancelar}
-                </button>
-                <button id="btn-confirmar-modal" class="flex-1 bg-neon-blue text-black py-2.5 rounded-lg hover:bg-white hover:shadow-[0_0_15px_rgba(0,229,255,0.5)] transition font-bold shadow-lg">
-                    ${textoConfirmar}
-                </button>
+                <button id="btn-cancel" class="flex-1 bg-transparent border border-gray-600 text-gray-300 py-2 rounded-lg hover:bg-gray-800 transition text-sm font-bold">${btnNao}</button>
+                <button id="btn-confirm" class="flex-1 bg-neon-blue text-black py-2 rounded-lg hover:bg-white transition text-sm font-bold shadow-lg">${btnSim}</button>
             </div>
         `;
 
@@ -89,92 +188,14 @@ function showConfirmModal(mensagem, textoConfirmar = 'Confirmar', textoCancelar 
             modal.classList.add('scale-100');
         });
 
-        const fechar = (resultado) => {
+        const fechar = (val) => {
             overlay.classList.add('opacity-0');
-            modal.classList.add('scale-95', 'opacity-0');
-            setTimeout(() => {
-                overlay.remove();
-                resolve(resultado);
-            }, 200);
+            modal.classList.add('scale-95');
+            setTimeout(() => { overlay.remove(); resolve(val); }, 200);
         };
 
-        overlay.querySelector('#btn-confirmar-modal').onclick = () => fechar(true);
-        overlay.querySelector('#btn-cancelar-modal').onclick = () => fechar(false);
-        overlay.onclick = (e) => { if (e.target === overlay) fechar(false); };
+        overlay.querySelector('#btn-confirm').onclick = () => fechar(true);
+        overlay.querySelector('#btn-cancel').onclick = () => fechar(false);
+        overlay.onclick = (e) => { if(e.target === overlay) fechar(false); };
     });
 }
-
-// --- UTILS DE AUTENTICAÇÃO ---
-
-function estaLogado() {
-    const token = localStorage.getItem('token');
-    const userInfo = localStorage.getItem('userInfo');
-    return !!(token && userInfo);
-}
-
-function getUsuarioLogado() {
-    try {
-        return JSON.parse(localStorage.getItem('userInfo'));
-    } catch (error) { return null; }
-}
-
-function fazerLogout(event) {
-    if (event) event.preventDefault();
-    localStorage.clear();
-    showToast('Você saiu da conta.', 'warning');
-    setTimeout(() => { window.location.href = 'index.html'; }, 1500);
-}
-
-function atualizarMenu() {
-    const navMenu = document.getElementById('nav-menu');
-    if (!navMenu) return;
-
-    const usuario = getUsuarioLogado();
-
-    if (estaLogado() && usuario) {
-        const primeiroNome = usuario.nome.split(' ')[0];
-        navMenu.innerHTML = `
-            <li>
-                <a href="perfil.html" class="text-neon-blue font-bold italic drop-shadow-sm flex items-center gap-2 hover:underline transition-all">
-                    <i class="fa-solid fa-user-astronaut"></i> ${primeiroNome}
-                </a>
-            </li>
-            <li><a href="minhasAtividades.html" class="text-gray-300 hover:text-neon-blue transition-colors font-medium">Minhas Atividades</a></li>
-            <li><a href="criarAtividade.html" class="text-gray-300 hover:text-neon-blue transition-colors font-medium">Criar Atividade</a></li>
-            <li><a href="#" class="border border-neon-pink text-neon-pink px-4 py-1.5 rounded hover:bg-neon-pink hover:text-white transition-colors font-bold btn-logout" onclick="fazerLogout(event)">Logout</a></li>
-        `;
-    } else {
-        navMenu.innerHTML = `
-            <li><a href="cadastro.html" class="text-gray-300 hover:text-neon-blue transition font-medium">Cadastrar</a></li>
-            <li>
-                <a href="login.html" class="bg-neon-blue !text-black hover:bg-white hover:!text-neon-blue px-5 py-2 rounded font-bold transition shadow-[0_0_10px_rgba(0,229,255,0.5)]">
-                    Login
-                </a>
-            </li>
-        `;
-    }
-}
-
-// --- FUNÇÕES AUXILIARES GLOBAIS (Para não dar erro nos outros scripts) ---
-
-function formatarDataHora(dataHora) {
-    const d = new Date(dataHora);
-    return d.toLocaleDateString('pt-BR', { 
-        weekday: 'long', day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit'
-    });
-}
-
-function getIconeEsporte(esporte) {
-    const icones = {
-        'Futebol': 'fa-solid fa-futbol',
-        'Vôlei': 'fa-solid fa-volleyball',
-        'Basquete': 'fa-solid fa-basketball',
-        'Corrida': 'fa-solid fa-person-running',
-        'Natação': 'fa-solid fa-person-swimming',
-        'Ciclismo': 'fa-solid fa-bicycle',
-        'Academia': 'fa-solid fa-dumbbell'
-    };
-    return icones[esporte] || 'fa-solid fa-person-running';
-}
-
-document.addEventListener('DOMContentLoaded', atualizarMenu);

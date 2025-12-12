@@ -21,6 +21,17 @@ router.get('/buscar', async (req, res) => {
     }
 });
 
+// --- MEU PERFIL ---
+router.get('/me', authMiddleware, async (req, res) => {
+    try {
+        const user = await User.findById(req.user.id).select('-senha -twoFactorCode');
+        if (!user) return res.status(404).json({ error: 'Usuário não encontrado.' });
+        res.json(user);
+    } catch (error) {
+        res.status(500).json({ error: 'Erro ao carregar perfil.' });
+    }
+});
+
 // --- PERFIL PÚBLICO ---
 router.get('/:id', async (req, res) => {
     try {
@@ -151,13 +162,28 @@ router.post('/login/verify', async (req, res) => {
     }
 });
 
-// --- ATUALIZAR PERFIL ---
-router.put('/perfil', authMiddleware, async (req, res) => {
-    const { nome, avatar } = req.body;
+router.put('/me', authMiddleware, async (req, res) => {
+    // Adicione os novos campos na desestruturação
+    const { nome, avatar, bio, cidade, instagram, esportes } = req.body;
+    
     try {
-        await User.findByIdAndUpdate(req.user.id, { nome, avatar });
-        res.json({ message: 'Perfil atualizado!', user: { nome, avatar } });
+        const updateData = { nome };
+        
+        // Só atualiza se o usuário enviou (para não apagar dados sem querer)
+        if (avatar) updateData.avatar = avatar;
+        if (bio !== undefined) updateData.bio = bio;
+        if (cidade !== undefined) updateData.cidade = cidade;
+        if (instagram !== undefined) updateData.instagram = instagram;
+        if (esportes !== undefined) updateData.esportes = esportes;
+
+        await User.findByIdAndUpdate(req.user.id, updateData);
+        
+        // Retorna o usuário atualizado
+        const userAtualizado = await User.findById(req.user.id).select('-senha -twoFactorCode');
+        res.json({ message: 'Perfil atualizado!', user: userAtualizado });
+        
     } catch (error) {
+        console.error(error);
         res.status(500).json({ error: 'Erro ao atualizar.' });
     }
 });

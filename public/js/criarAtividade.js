@@ -85,7 +85,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 btnSubmit.classList.remove('bg-neon-blue', 'text-black');
                 btnSubmit.classList.add('bg-green-500', 'text-white');
                 
-                showToast('Atividade criada com sucesso! 🚀', 'success');
+                showToast('Atividade criada com sucesso!', 'success');
                 setTimeout(() => window.location.href = 'minhasAtividades.html', 1500);
             } else {
                 if (response.status === 401) {

@@ -1,8 +1,15 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-    <title>Se Mexe - Cadastro</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Se Mexe - Criar Conta</title>
     <link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAzMjAgNTEyIj48IS0tIUZvbnQgQXdlc29tZSBGcmVlIDYuNS4yIGJ5IEBmb250YXdlc29tZSAtIGh0dHBzOi8vZm9udGF3ZXNvbWUuY29tIExpY2Vuc2UgLSBodHRwczovL2ZvbnRhd2Vzb21lLmNvbS9saWNlbnNlL2ZyZWUgQ29weXJpZ2h0IDIwMjQgRm9udGljb25zLCBJbmMuLS0+PHBhdGggZmlsbD0iIzAwRTVGRiIgZD0iTTI5NiAxNjBIMTgwLjZsNDIuNi0xMjkuOEMyMjcuMiAxNSAyMTUuNyAwIDIwMCAwSDU2QzQ0IDAgMzMuOCA4LjkgMzIuMiAyMC44bC0zMiAyNDBDLTEuNyAyNzUuMiA5LjUgMjg4IDI0IDI4OGgxMTUuNEw5Ni44IDQxNy44Yy00IDE1LjIgNy41IDMwLjIgMjMuMiAzMC4yYzUuOSAwIDExLjYtMi4yIDE1LjgtNi40bDE5Mi0xOTJjMTMuMy0xMy4zIDEyLjUtMzUuNS0yLTQ3Ljh6Ii8+PC9zdmc+" type="image/svg+xml">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
 
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -16,63 +23,129 @@
                         'dark-surface': '#1E1E1E',
                         'dark-highlight': '#2D2D2D',
                     },
-                    fontFamily: { sans: ['Poppins', 'sans-serif'] }
+                    fontFamily: { sans: ['Poppins', 'sans-serif'] },
+                    backgroundImage: {
+                        'hero-pattern': "url('https://images.unsplash.com/photo-1530549387789-4c1017266635?q=80&w=870&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D')"
+                    }
                 }
             }
         }
     </script>
-    <style>@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;700&display=swap');</style>
+    <style>
+        #nav-menu a { color: #e5e7eb; font-weight: 500; transition: color 0.3s ease; text-shadow: 0 1px 3px rgba(0,0,0,0.5); }
+        #nav-menu a:hover { color: #00E5FF; text-shadow: 0 0 10px rgba(0, 229, 255, 0.8); }
+        .hamburger-toggle .line { transition: all 0.3s ease-in-out; }
+        .hamburger-toggle.active .line-1 { transform: translateY(8px) rotate(45deg); }
+        .hamburger-toggle.active .line-2 { opacity: 0; }
+        .hamburger-toggle.active .line-3 { transform: translateY(-8px) rotate(-45deg); }
+        html { scroll-behavior: smooth; }
+        body.has-bottom-nav footer { padding-bottom: 90px; }
+    </style>
 </head>
 <body class="bg-dark-base text-gray-200 font-sans min-h-screen flex flex-col selection:bg-neon-blue selection:text-black">
 
-    <header class="bg-dark-surface py-4 border-b border-gray-800 sticky top-0 z-50 shadow-lg">
-        <nav class="container mx-auto px-5">
-            <a href="index.html" class="text-2xl font-bold text-neon-blue italic flex items-center gap-2">
-                <i class="fa-solid fa-bolt"></i> Se Mexe
-            </a>
-        </nav>
-    </header>
-            
-    <main class="container mx-auto px-5 py-10 flex-grow">
-        <div class="mb-6 max-w-md mx-auto">
-            <a href="index.html" class="inline-flex items-center gap-2 text-neon-blue font-medium hover:text-white transition">
-                <i class="fa-solid fa-arrow-left"></i> Voltar
-            </a>
-        </div>
+    <div class="relative w-full h-[55vh] md:h-[65vh] flex flex-col overflow-hidden">
+        <div class="absolute inset-0 bg-hero-pattern bg-cover bg-center bg-fixed animate-[pulse_30s_ease-in-out_infinite] scale-105"></div>
+        <div class="absolute inset-0 bg-gradient-to-b from-black/80 via-black/60 to-dark-base"></div>
 
-        <div class="max-w-md mx-auto bg-dark-surface border border-gray-800 rounded-xl shadow-2xl p-8">
-            <h2 class="text-2xl font-bold text-white text-center mb-8">Crie sua Conta</h2>
-            
-            <form id="register-form" class="space-y-5"> 
-                <div>
-                    <label for="name" class="block text-gray-400 font-medium mb-2">Nome Completo</label>
-                    <input type="text" id="name" name="name" required class="w-full bg-dark-highlight border border-gray-700 text-white rounded-md p-3 focus:outline-none focus:border-neon-blue focus:ring-1 focus:ring-neon-blue transition">
-                </div>
-                <div>
-                    <label for="email" class="block text-gray-400 font-medium mb-2">Email</label>
-                    <input type="email" id="email" name="email" required class="w-full bg-dark-highlight border border-gray-700 text-white rounded-md p-3 focus:outline-none focus:border-neon-blue focus:ring-1 focus:ring-neon-blue transition">
-                </div>
-                <div>
-                    <label for="password" class="block text-gray-400 font-medium mb-2">Senha</label>
-                    <input type="password" id="password" name="password" required minlength="6" class="w-full bg-dark-highlight border border-gray-700 text-white rounded-md p-3 focus:outline-none focus:border-neon-blue focus:ring-1 focus:ring-neon-blue transition">
-                </div>
+        <header class="absolute top-0 left-0 w-full z-50 py-6">
+            <nav class="container mx-auto px-5 flex justify-between items-center relative">
+                <a href="index.html" class="text-3xl font-black text-white italic flex items-center gap-2 tracking-tighter drop-shadow-lg">
+                    <i class="fa-solid fa-bolt text-neon-blue"></i> Se<span class="text-neon-blue">Mexe</span>
+                </a>
                 
-                <p class="text-center text-gray-500">Já possui uma conta? <a href="login.html" class="text-neon-blue font-bold hover:text-white transition">Entre Aqui</a></p>
+                <button id="hamburger-btn" aria-label="Abrir menu principal" class="hamburger-toggle md:hidden flex flex-col gap-1.5 cursor-pointer z-50">
+                    <span class="line line-1 block w-6 h-0.5 bg-neon-blue"></span>
+                    <span class="line line-2 block w-6 h-0.5 bg-neon-blue"></span>
+                    <span class="line line-3 block w-6 h-0.5 bg-neon-blue"></span>
+                </button>
+
+                <div id="nav-menu-wrapper" class="fixed inset-0 bg-dark-base/95 backdrop-blur-md flex flex-col items-center justify-center gap-8 text-xl transition-transform duration-300 translate-x-full md:translate-x-0 md:static md:bg-transparent md:flex-row md:gap-8 md:text-base md:h-auto md:border-none">
+                    <ul id="nav-menu" class="flex flex-col md:flex-row gap-6 items-center mb-4 md:mb-0"></ul>
+                </div>
+            </nav>
+        </header>
+
+        <div class="relative z-30 container mx-auto px-5 flex-grow flex flex-col justify-center text-center pt-20 pb-32">
+            <span class="text-neon-blue font-bold tracking-widest uppercase text-xs md:text-sm mb-2 animate-fade-in-up">Junte-se ao time</span>
+            <h1 class="text-4xl md:text-6xl font-black text-white mb-4 drop-shadow-2xl">
+                Crie sua Conta
+            </h1>
+            <p class="text-gray-300 max-w-lg mx-auto drop-shadow-md relative z-30">Comece a organizar partidas e encontrar novos parceiros de esporte hoje mesmo.</p>
+        </div>
+    </div>
+
+    <main class="container mx-auto px-5 flex-grow -mt-24 relative z-40 pb-20">
+        
+        <div class="max-w-md mx-auto bg-dark-surface border border-gray-800 rounded-2xl shadow-2xl p-8 relative overflow-hidden">
+            <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-neon-blue to-transparent"></div>
+
+            <form id="cadastro-form" class="space-y-5">
                 
-                <p id="auth-status" class="text-center text-sm h-5 text-neon-pink font-medium mb-4"></p>
-                
-                <button type="submit" class="w-full bg-neon-blue text-black font-bold text-lg py-3 rounded-md hover:bg-white hover:shadow-[0_0_15px_rgba(0,229,255,0.6)] transition shadow-lg cursor-pointer">Cadastrar</button>
+                <div>
+                    <label for="nome" class="block text-gray-400 font-bold text-xs uppercase tracking-wider mb-2">Nome Completo</label>
+                    <div class="relative">
+                        <i class="fa-solid fa-user absolute left-3 top-3.5 text-gray-500"></i>
+                        <input type="text" id="nome" placeholder="Seu nome" required class="w-full bg-dark-highlight border border-gray-700 text-white rounded-lg p-3 pl-10 focus:outline-none focus:border-neon-blue focus:ring-1 focus:ring-neon-blue transition placeholder-gray-600">
+                    </div>
+                </div>
+
+                <div>
+                    <label for="email" class="block text-gray-400 font-bold text-xs uppercase tracking-wider mb-2">Email</label>
+                    <div class="relative">
+                        <i class="fa-solid fa-envelope absolute left-3 top-3.5 text-gray-500"></i>
+                        <input type="email" id="email" placeholder="seu@email.com" required class="w-full bg-dark-highlight border border-gray-700 text-white rounded-lg p-3 pl-10 focus:outline-none focus:border-neon-blue focus:ring-1 focus:ring-neon-blue transition placeholder-gray-600">
+                    </div>
+                </div>
+
+                <div>
+                    <label for="senha" class="block text-gray-400 font-bold text-xs uppercase tracking-wider mb-2">Senha</label>
+                    <div class="relative">
+                        <i class="fa-solid fa-lock absolute left-3 top-3.5 text-gray-500"></i>
+                        <input type="password" id="senha" placeholder="••••••••" required class="w-full bg-dark-highlight border border-gray-700 text-white rounded-lg p-3 pl-10 focus:outline-none focus:border-neon-blue focus:ring-1 focus:ring-neon-blue transition placeholder-gray-600">
+                    </div>
+                    <p class="text-[10px] text-gray-500 mt-1 ml-1">Mínimo 6 caracteres, 1 maiúscula e 1 número.</p>
+                </div>
+
+                <div>
+                    <label for="confirmarSenha" class="block text-gray-400 font-bold text-xs uppercase tracking-wider mb-2">Confirmar Senha</label>
+                    <div class="relative">
+                        <i class="fa-solid fa-check-double absolute left-3 top-3.5 text-gray-500"></i>
+                        <input type="password" id="confirmarSenha" placeholder="••••••••" required class="w-full bg-dark-highlight border border-gray-700 text-white rounded-lg p-3 pl-10 focus:outline-none focus:border-neon-blue focus:ring-1 focus:ring-neon-blue transition placeholder-gray-600">
+                    </div>
+                </div>
+
+                <div class="pt-2">
+                    <button type="submit" id="btn-cadastrar" class="w-full bg-neon-blue text-black font-bold text-lg py-3 rounded-lg hover:bg-white hover:shadow-[0_0_20px_rgba(0,229,255,0.6)] transition shadow-lg cursor-pointer transform hover:-translate-y-1">
+                        Cadastrar
+                    </button>
+                </div>
+
+                <p class="text-center text-gray-400 text-sm mt-4">
+                    Já tem uma conta? <a href="login.html" class="text-neon-blue font-bold hover:underline">Faça Login</a>
+                </p>
             </form>
         </div>
     </main>
 
-    <footer class="bg-black border-t border-gray-900 text-white py-8 mt-auto text-center">
+    <footer class="bg-black border-t border-gray-900 text-white py-12 mt-auto text-center">
+        <h4 class="text-2xl font-black italic mb-2 text-white flex justify-center items-center gap-2"><i class="fa-solid fa-bolt text-neon-blue"></i> Se Mexe</h4>
         <p class="text-gray-500 text-sm">&copy; 2025 Se Mexe. Direitos Reservados.</p>
     </footer>
-
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
     
     <script src="js/utils.js"></script>
     <script src="js/auth.js"></script>
+    
+    <script>
+        const btn = document.getElementById('hamburger-btn');
+        const menu = document.getElementById('nav-menu-wrapper');
+        if(btn && menu){
+            btn.addEventListener('click', () => {
+                btn.classList.toggle('active');
+                menu.classList.toggle('translate-x-full');
+                menu.classList.toggle('translate-x-0');
+            });
+        }
+    </script>
 </body>
 </html>

@@ -1,118 +1,186 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-br">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nova Senha - Se Mexe</title>
+    <title>Se Mexe - Nova Senha</title>
+    <link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAzMjAgNTEyIj48IS0tIUZvbnQgQXdlc29tZSBGcmVlIDYuNS4yIGJ5IEBmb250YXdlc29tZSAtIGh0dHBzOi8vZm9udGF3ZXNvbWUuY29tIExpY2Vuc2UgLSBodHRwczovL2ZvbnRhd2Vzb21lLmNvbS9saWNlbnNlL2ZyZWUgQ29weXJpZ2h0IDIwMjQgRm9udGljb25zLCBJbmMuLS0+PHBhdGggZmlsbD0iIzAwRTVGRiIgZD0iTTI5NiAxNjBIMTgwLjZsNDIuNi0xMjkuOEMyMjcuMiAxNSAyMTUuNyAwIDIwMCAwSDU2QzQ0IDAgMzMuOCA4LjkgMzIuMiAyMC44bC0zMiAyNDBDLTEuNyAyNzUuMiA5LjUgMjg4IDI0IDI4OGgxMTUuNEw5Ni44IDQxNy44Yy00IDE1LjIgNy41IDMwLjIgMjMuMiAzMC4yYzUuOSAwIDExLjYtMi4yIDE1LjgtNi40bDE5Mi0xOTJjMTMuMy0xMy4zIDEyLjUtMzUuNS0yLTQ3Ljh6Ii8+PC9zdmc+" type="image/svg+xml">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
             theme: {
                 extend: {
-                    colors: { 'neon-blue': '#00E5FF', 'neon-pink': '#FF007F', 'dark-base': '#121212', 'dark-surface': '#1E1E1E' },
-                    fontFamily: { sans: ['Poppins', 'sans-serif'] }
+                    colors: {
+                        'neon-blue': '#00E5FF',
+                        'neon-pink': '#FF007F',
+                        'dark-base': '#121212',
+                        'dark-surface': '#1E1E1E',
+                        'dark-highlight': '#2D2D2D',
+                    },
+                    fontFamily: { sans: ['Poppins', 'sans-serif'] },
+                    backgroundImage: {
+                        // Imagem: Cadeado/Segurança digital
+                        'hero-pattern': "url('https://images.unsplash.com/photo-1555949963-ff9fe0c870eb?q=80&w=2070&auto=format&fit=crop')"
+                    }
                 }
             }
         }
     </script>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <style>
+        #nav-menu a { color: #e5e7eb; font-weight: 500; transition: color 0.3s ease; text-shadow: 0 1px 3px rgba(0,0,0,0.5); }
+        #nav-menu a:hover { color: #00E5FF; text-shadow: 0 0 10px rgba(0, 229, 255, 0.8); }
+        .hamburger-toggle .line { transition: all 0.3s ease-in-out; }
+        .hamburger-toggle.active .line-1 { transform: translateY(8px) rotate(45deg); }
+        .hamburger-toggle.active .line-2 { opacity: 0; }
+        .hamburger-toggle.active .line-3 { transform: translateY(-8px) rotate(-45deg); }
+        html { scroll-behavior: smooth; }
+        body.has-bottom-nav footer { padding-bottom: 90px; }
+    </style>
 </head>
-<body class="bg-dark-base text-white font-sans flex items-center justify-center min-h-screen px-4">
+<body class="bg-dark-base text-gray-200 font-sans min-h-screen flex flex-col selection:bg-neon-blue selection:text-black">
 
-    <div class="w-full max-w-md bg-dark-surface p-8 rounded-xl shadow-lg border border-gray-800">
-        <div class="text-center mb-6">
-            <h2 class="text-2xl font-bold text-white">Criar Nova Senha</h2>
-            <p class="text-gray-400 text-sm mt-2">Escolha uma senha forte para proteger sua conta.</p>
-        </div>
+    <div class="relative w-full h-[50vh] md:h-[60vh] flex flex-col overflow-hidden">
+        <div class="absolute inset-0 bg-hero-pattern bg-cover bg-center bg-fixed animate-[pulse_40s_ease-in-out_infinite] scale-105"></div>
+        <div class="absolute inset-0 bg-gradient-to-b from-black/80 via-black/60 to-dark-base"></div>
 
-        <form id="form-reset" class="space-y-4">
-            <div>
-                <label class="block text-gray-400 text-sm mb-1">Nova Senha</label>
-                <input type="password" id="senha" placeholder="Mínimo 6 chars, maiúscula e número" required class="w-full bg-[#121212] border border-gray-700 rounded p-3 text-white focus:border-neon-blue focus:outline-none transition">
-            </div>
-            
-            <div>
-                <label class="block text-gray-400 text-sm mb-1">Confirmar Nova Senha</label>
-                <input type="password" id="confirmar-senha" placeholder="Repita a senha" required class="w-full bg-[#121212] border border-gray-700 rounded p-3 text-white focus:border-neon-blue focus:outline-none transition">
-            </div>
+        <header class="absolute top-0 left-0 w-full z-50 py-6">
+            <nav class="container mx-auto px-5 flex justify-between items-center relative">
+                <a href="index.html" class="text-3xl font-black text-white italic flex items-center gap-2 tracking-tighter drop-shadow-lg">
+                    <i class="fa-solid fa-bolt text-neon-blue"></i> Se<span class="text-neon-blue">Mexe</span>
+                </a>
+                
+                <button id="hamburger-btn" aria-label="Abrir menu principal" class="hamburger-toggle md:hidden flex flex-col gap-1.5 cursor-pointer z-50">
+                    <span class="line line-1 block w-6 h-0.5 bg-neon-blue"></span>
+                    <span class="line line-2 block w-6 h-0.5 bg-neon-blue"></span>
+                    <span class="line line-3 block w-6 h-0.5 bg-neon-blue"></span>
+                </button>
 
-            <button type="submit" id="btn-salvar" class="w-full bg-neon-blue text-black font-bold py-3 rounded hover:bg-white hover:shadow-[0_0_15px_rgba(0,229,255,0.5)] transition duration-300">
+                <div id="nav-menu-wrapper" class="fixed inset-0 bg-dark-base/95 backdrop-blur-md flex flex-col items-center justify-center gap-8 text-xl transition-transform duration-300 translate-x-full md:translate-x-0 md:static md:bg-transparent md:flex-row md:gap-8 md:text-base md:h-auto md:border-none">
+                    <ul id="nav-menu" class="flex flex-col md:flex-row gap-6 items-center mb-4 md:mb-0"></ul>
+                </div>
+            </nav>
+        </header>
+
+        <div class="relative z-30 container mx-auto px-5 flex-grow flex flex-col justify-center text-center pt-20 pb-32">
+            <span class="text-neon-blue font-bold tracking-widest uppercase text-xs md:text-sm mb-2 animate-fade-in-up">Segurança da Conta</span>
+            <h1 class="text-4xl md:text-6xl font-black text-white mb-4 drop-shadow-2xl">
                 Redefinir Senha
-            </button>
-        </form>
-        
-        <p id="msg" class="text-center mt-4 text-sm font-bold min-h-[20px]"></p>
+            </h1>
+            <p class="text-gray-300 max-w-lg mx-auto drop-shadow-md relative z-30">Crie uma nova senha forte para proteger seu acesso.</p>
+        </div>
     </div>
 
-    <script>
-        // Pega o token da URL (?token=xyz...)
-        const params = new URLSearchParams(window.location.search);
-        const token = params.get('token');
+    <main class="container mx-auto px-5 flex-grow -mt-24 relative z-40 pb-20">
+        
+        <div class="max-w-md mx-auto bg-dark-surface border border-gray-800 rounded-2xl shadow-2xl p-8 relative overflow-hidden">
+            <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-neon-blue to-transparent"></div>
 
-        if (!token) {
-            document.body.innerHTML = `
-                <div class="flex flex-col items-center justify-center h-screen text-center px-4">
-                    <i class="fa-solid fa-triangle-exclamation text-neon-pink text-5xl mb-4"></i>
-                    <h1 class='text-white text-2xl font-bold'>Token inválido ou ausente</h1>
-                    <p class="text-gray-400 mt-2">Por favor, solicite a recuperação de senha novamente.</p>
-                    <a href="esqueciSenha.html" class="mt-6 text-neon-blue hover:underline">Voltar</a>
+            <form id="reset-form" class="space-y-5">
+                
+                <div>
+                    <label for="newPassword" class="block text-gray-400 font-bold text-xs uppercase tracking-wider mb-2">Nova Senha</label>
+                    <div class="relative">
+                        <i class="fa-solid fa-lock absolute left-3 top-3.5 text-gray-500"></i>
+                        <input type="password" id="newPassword" placeholder="••••••••" required class="w-full bg-dark-highlight border border-gray-700 text-white rounded-lg p-3 pl-10 focus:outline-none focus:border-neon-blue focus:ring-1 focus:ring-neon-blue transition placeholder-gray-600">
+                    </div>
+                    <p class="text-[10px] text-gray-500 mt-1 ml-1">Mínimo 6 caracteres, 1 maiúscula e 1 número.</p>
                 </div>
-            `;
-        }
 
-        document.getElementById('form-reset').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const senha = document.getElementById('senha').value;
-            const confirmar = document.getElementById('confirmar-senha').value;
-            const btn = document.getElementById('btn-salvar');
-            const msg = document.getElementById('msg');
+                <div>
+                    <label for="confirmPassword" class="block text-gray-400 font-bold text-xs uppercase tracking-wider mb-2">Confirmar Senha</label>
+                    <div class="relative">
+                        <i class="fa-solid fa-check-double absolute left-3 top-3.5 text-gray-500"></i>
+                        <input type="password" id="confirmPassword" placeholder="••••••••" required class="w-full bg-dark-highlight border border-gray-700 text-white rounded-lg p-3 pl-10 focus:outline-none focus:border-neon-blue focus:ring-1 focus:ring-neon-blue transition placeholder-gray-600">
+                    </div>
+                </div>
 
-            msg.innerText = "";
-            msg.className = "text-center mt-4 text-sm font-bold";
+                <div class="pt-2">
+                    <button type="submit" id="btn-reset" class="w-full bg-neon-blue text-black font-bold text-lg py-3 rounded-lg hover:bg-white hover:shadow-[0_0_20px_rgba(0,229,255,0.6)] transition shadow-lg cursor-pointer transform hover:-translate-y-1">
+                        Alterar Senha
+                    </button>
+                </div>
 
-            if (senha !== confirmar) {
-                msg.className = "text-center mt-4 text-sm font-bold text-neon-pink";
-                msg.innerText = "As senhas não coincidem.";
-                return;
+            </form>
+        </div>
+    </main>
+
+    <footer class="bg-black border-t border-gray-900 text-white py-12 mt-auto text-center">
+        <h4 class="text-2xl font-black italic mb-2 text-white flex justify-center items-center gap-2"><i class="fa-solid fa-bolt text-neon-blue"></i> Se Mexe</h4>
+        <p class="text-gray-500 text-sm">&copy; 2025 Se Mexe. Direitos Reservados.</p>
+    </footer>
+    
+    <script src="js/utils.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Menu Mobile
+            const btn = document.getElementById('hamburger-btn');
+            const menu = document.getElementById('nav-menu-wrapper');
+            if(btn && menu){
+                btn.addEventListener('click', () => {
+                    btn.classList.toggle('active');
+                    menu.classList.toggle('translate-x-full');
+                    menu.classList.toggle('translate-x-0');
+                });
             }
 
-            btn.disabled = true;
-            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Salvando...';
-
-            try {
-                const res = await fetch(`/api/users/reset-password/${token}`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ password: senha }) 
-                });
-
-                const data = await res.json();
-
-                if (res.ok) {
-                    msg.className = "text-center mt-4 text-sm font-bold text-green-400";
-                    msg.innerHTML = '<i class="fa-solid fa-check-circle"></i> Senha alterada! Redirecionando...';
+            // Lógica de Redefinição
+            const form = document.getElementById('reset-form');
+            if(form) {
+                form.addEventListener('submit', async (e) => {
+                    e.preventDefault();
                     
-                    // Sucesso visual no botão
-                    btn.className = "w-full bg-green-500 text-black font-bold py-3 rounded transition";
-                    btn.innerText = "Sucesso!";
+                    // Pega o token da URL (?token=XYZ...)
+                    const urlParams = new URLSearchParams(window.location.search);
+                    const token = urlParams.get('token');
 
-                    // --- REDIRECIONA AUTOMATICAMENTE APÓS 2 SEGUNDOS ---
-                    setTimeout(() => {
-                        window.location.href = 'login.html';
-                    }, 2000);
+                    if (!token) {
+                        showToast('Token de recuperação inválido ou ausente.', 'error');
+                        return;
+                    }
 
-                } else {
-                    msg.className = "text-center mt-4 text-sm font-bold text-neon-pink";
-                    msg.innerText = "❌ " + (data.error || "Erro ao alterar senha.");
-                    btn.disabled = false;
-                    btn.innerHTML = "Tentar Novamente";
-                }
-            } catch (err) {
-                msg.className = "text-center mt-4 text-sm font-bold text-neon-pink";
-                msg.innerText = "Erro de conexão com o servidor.";
-                btn.disabled = false;
-                btn.innerText = "Tentar Novamente";
+                    const senha = document.getElementById('newPassword').value;
+                    const confirmacao = document.getElementById('confirmPassword').value;
+                    const btnSubmit = document.getElementById('btn-reset');
+
+                    if (senha !== confirmacao) {
+                        showToast('As senhas não coincidem.', 'warning');
+                        return;
+                    }
+
+                    const originalText = btnSubmit.innerText;
+                    btnSubmit.disabled = true;
+                    btnSubmit.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Processando...';
+
+                    try {
+                        const res = await fetch(`/api/users/reset-password/${token}`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ password: senha })
+                        });
+
+                        const data = await res.json();
+
+                        if (res.ok) {
+                            showToast('Senha alterada com sucesso! 🚀', 'success');
+                            setTimeout(() => window.location.href = 'login.html', 2000);
+                        } else {
+                            showToast(data.error || 'Erro ao alterar senha.', 'error');
+                            btnSubmit.disabled = false;
+                            btnSubmit.innerText = originalText;
+                        }
+                    } catch (error) {
+                        console.error(error);
+                        showToast('Erro de conexão.', 'error');
+                        btnSubmit.disabled = false;
+                        btnSubmit.innerText = originalText;
+                    }
+                });
             }
         });
     </script>

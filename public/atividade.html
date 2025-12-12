@@ -1,100 +1,222 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-br">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Se Mexe - Detalhes</title>
-  
-  <link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAzMjAgNTEyIj48IS0tIUZvbnQgQXdlc29tZSBGcmVlIDYuNS4yIGJ5IEBmb250YXdlc29tZSAtIGh0dHBzOi8vZm9udGF3ZXNvbWUuY29tIExpY2Vuc2UgLSBodHRwczovL2ZvbnRhd2Vzb21lLmNvbS9saWNlbnNlL2ZyZWUgQ29weXJpZ2h0IDIwMjQgRm9udGljb25zLCBJbmMuLS0+PHBhdGggZmlsbD0iIzAwRTVGRiIgZD0iTTI5NiAxNjBIMTgwLjZsNDIuNi0xMjkuOEMyMjcuMiAxNSAyMTUuNyAwIDIwMCAwSDU2QzQ0IDAgMzMuOCA4LjkgMzIuMiAyMC44bC0zMiAyNDBDLTEuNyAyNzUuMiA5LjUgMjg4IDI0IDI4OGgxMTUuNEw5Ni44IDQxNy44Yy00IDE1LjIgNy41IDMwLjIgMjMuMiAzMC4yYzUuOSAwIDExLjYtMi4yIDE1LjgtNi40bDE5Mi0xOTJjMTMuMy0xMy4zIDEyLjUtMzUuNS0yLTQ3Ljh6Ii8+PC9zdmc+" type="image/svg+xml">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Se Mexe - Detalhes da Atividade</title>
+    <link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAzMjAgNTEyIj48IS0tIUZvbnQgQXdlc29tZSBGcmVlIDYuNS4yIGJ5IEBmb250YXdlc29tZSAtIGh0dHBzOi8vZm9udGF3ZXNvbWUuY29tIExpY2Vuc2UgLSBodHRwczovL2ZvbnRhd2Vzb21lLmNvbS9saWNlbnNlL2ZyZWUgQ29weXJpZ2h0IDIwMjQgRm9udGljb25zLCBJbmMuLS0+PHBhdGggZmlsbD0iIzAwRTVGRiIgZD0iTTI5NiAxNjBIMTgwLjZsNDIuNi0xMjkuOEMyMjcuMiAxNSAyMTUuNyAwIDIwMCAwSDU2QzQ0IDAgMzMuOCA4LjkgMzIuMiAyMC44bC0zMiAyNDBDLTEuNyAyNzUuMiA5LjUgMjg4IDI0IDI4OGgxMTUuNEw5Ni44IDQxNy44Yy00IDE1LjIgNy41IDMwLjIgMjMuMiAzMC4yYzUuOSAwIDExLjYtMi4yIDE1LjgtNi40bDE5Mi0xOTJjMTMuMy0xMy4zIDEyLjUtMzUuNS0yLTQ3Ljh6Ii8+PC9zdmc+" type="image/svg+xml">
 
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
-  
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwind.config = {
-        theme: {
-            extend: {
-                colors: {
-                    'neon-blue': '#00E5FF',
-                    'neon-pink': '#FF007F',
-                    'dark-base': '#121212',
-                    'dark-surface': '#1E1E1E',
-                    'dark-highlight': '#2D2D2D',
-                },
-                fontFamily: { sans: ['Poppins', 'sans-serif'] }
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'neon-blue': '#00E5FF',
+                        'neon-pink': '#FF007F',
+                        'dark-base': '#121212',
+                        'dark-surface': '#1E1E1E',
+                        'dark-highlight': '#2D2D2D',
+                    },
+                    fontFamily: { sans: ['Poppins', 'sans-serif'] },
+                    backgroundImage: {
+                        'hero-pattern': "url('https://plus.unsplash.com/premium_photo-1661872981731-54199736e0e1?q=80&w=870&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D')"
+                    }
+                }
             }
         }
-    }
-  </script>
-  <style>
-    #nav-menu a { color: #d1d5db; font-weight: 500; transition: color 0.3s ease; }
-    #nav-menu a:hover { color: #00E5FF; text-shadow: 0 0 8px rgba(0,229,255,0.5); }
-    .hamburger-toggle .line { transition: all 0.3s ease-in-out; }
-    .hamburger-toggle.active .line-1 { transform: translateY(8px) rotate(45deg); }
-    .hamburger-toggle.active .line-2 { opacity: 0; }
-    .hamburger-toggle.active .line-3 { transform: translateY(-8px) rotate(-45deg); }
-  </style>
+    </script>
+    <style>
+        #nav-menu a { color: #e5e7eb; font-weight: 500; transition: color 0.3s ease; text-shadow: 0 1px 3px rgba(0,0,0,0.5); }
+        #nav-menu a:hover { color: #00E5FF; text-shadow: 0 0 10px rgba(0, 229, 255, 0.8); }
+        .hamburger-toggle .line { transition: all 0.3s ease-in-out; }
+        .hamburger-toggle.active .line-1 { transform: translateY(8px) rotate(45deg); }
+        .hamburger-toggle.active .line-2 { opacity: 0; }
+        .hamburger-toggle.active .line-3 { transform: translateY(-8px) rotate(-45deg); }
+        html { scroll-behavior: smooth; }
+        body.has-bottom-nav footer { padding-bottom: 90px; }
+    </style>
 </head>
 <body class="bg-dark-base text-gray-200 font-sans min-h-screen flex flex-col selection:bg-neon-blue selection:text-black">
 
-  <header class="bg-dark-surface py-4 border-b border-gray-800 sticky top-0 z-50 shadow-lg shadow-black/50">
-    <nav class="container mx-auto px-5 flex justify-between items-center relative">
-        <a href="index.html" class="text-2xl font-bold text-neon-blue italic flex items-center gap-2 hover:scale-105 transition-transform">
-            <i class="fa-solid fa-bolt"></i> Se Mexe
-        </a>
-        <button id="hamburger-btn" aria-label="Abrir menu" class="hamburger-toggle md:hidden flex flex-col gap-1.5 cursor-pointer z-50">
-            <span class="line line-1 block w-6 h-0.5 bg-neon-blue"></span>
-            <span class="line line-2 block w-6 h-0.5 bg-neon-blue"></span>
-            <span class="line line-3 block w-6 h-0.5 bg-neon-blue"></span>
-        </button>
-        <div id="nav-menu-wrapper" class="fixed inset-0 bg-dark-base/95 backdrop-blur-md flex flex-col items-center justify-center gap-8 text-xl transition-transform duration-300 translate-x-full md:translate-x-0 md:static md:bg-transparent md:flex-row md:gap-8 md:text-base md:h-auto border-l border-gray-800 md:border-none">
-            <ul id="nav-menu" class="flex flex-col md:flex-row gap-6 items-center"></ul>
-        </div>
-    </nav>
-  </header>
+    <div class="relative w-full h-[50vh] md:h-[60vh] flex flex-col overflow-hidden">
+        <div class="absolute inset-0 bg-hero-pattern bg-cover bg-center bg-fixed animate-[pulse_30s_ease-in-out_infinite] scale-105"></div>
+        <div class="absolute inset-0 bg-gradient-to-b from-black/80 via-black/60 to-dark-base"></div>
 
-  <main class="container mx-auto px-5 py-10 max-w-4xl">
-    <a href="index.html" class="inline-flex items-center gap-2 text-neon-blue font-medium hover:text-white transition mb-8 btn-back">
-      <i class="fa-solid fa-arrow-left"></i> Voltar para início
-    </a>
+        <header class="absolute top-0 left-0 w-full z-50 py-6">
+            <nav class="container mx-auto px-5 flex justify-between items-center relative">
+                <a href="index.html" class="text-3xl font-black text-white italic flex items-center gap-2 tracking-tighter drop-shadow-lg">
+                    <i class="fa-solid fa-bolt text-neon-blue"></i> Se<span class="text-neon-blue">Mexe</span>
+                </a>
+                
+                <button id="hamburger-btn" aria-label="Abrir menu principal" class="hamburger-toggle md:hidden flex flex-col gap-1.5 cursor-pointer z-50">
+                    <span class="line line-1 block w-6 h-0.5 bg-neon-blue"></span>
+                    <span class="line line-2 block w-6 h-0.5 bg-neon-blue"></span>
+                    <span class="line line-3 block w-6 h-0.5 bg-neon-blue"></span>
+                </button>
 
-    <div class="bg-dark-surface border border-gray-800 rounded-xl shadow-2xl p-6 md:p-8">
-        <h1 id="titulo-atividade" class="text-3xl md:text-4xl font-bold text-white text-center mb-8 drop-shadow-md">Carregando...</h1>
+                <div id="nav-menu-wrapper" class="fixed inset-0 bg-dark-base/95 backdrop-blur-md flex flex-col items-center justify-center gap-8 text-xl transition-transform duration-300 translate-x-full md:translate-x-0 md:static md:bg-transparent md:flex-row md:gap-8 md:text-base md:h-auto md:border-none">
+                    <ul id="nav-menu" class="flex flex-col md:flex-row gap-6 items-center mb-4 md:mb-0"></ul>
+                </div>
+            </nav>
+        </header>
 
-        <div id="atividade-info-container" class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8 text-gray-300"></div>
-
-        <button id="participar-btn" disabled class="w-full bg-neon-blue text-black py-4 rounded-lg font-bold text-lg flex justify-center items-center gap-2 hover:bg-white hover:shadow-[0_0_15px_rgba(0,229,255,0.6)] disabled:bg-gray-800 disabled:text-gray-500 disabled:shadow-none disabled:cursor-not-allowed transition duration-300 shadow-[0_0_10px_rgba(0,229,255,0.3)] mb-8">
-          <i class="fa-solid fa-spinner fa-spin"></i> Carregando...
-        </button>
-
-        <div id="participantes-container" class="bg-black/30 rounded-lg p-6 mb-8 border border-gray-800"></div>
-
-        <div id="mapa-section" class="bg-black/30 rounded-lg p-6 border border-gray-800 hidden">
-          <h3 class="text-xl font-bold text-white mb-4 flex items-center gap-2"><i class="fa-solid fa-map-location-dot text-neon-blue"></i> Localização</h3>
-          <div id="map" class="h-96 w-full rounded-lg shadow-inner z-0"></div>
+        <div class="relative z-30 container mx-auto px-5 flex-grow flex flex-col justify-center text-center pt-20 pb-32">
+            <span class="text-neon-blue font-bold tracking-widest uppercase text-xs md:text-sm mb-2 animate-fade-in-up bg-black/40 px-3 py-1 rounded-full border border-neon-blue/30 backdrop-blur-sm inline-block mx-auto">Detalhes do Evento</span>
+            
+            <h1 id="titulo-atividade" class="text-4xl md:text-6xl font-black text-white mb-4 drop-shadow-2xl capitalize">
+                Carregando...
+            </h1>
+            
+            <div class="flex items-center justify-center gap-4 text-sm md:text-base text-gray-300 drop-shadow-md relative z-50">
+                <a href="index.html" class="hover:text-neon-blue transition flex items-center gap-2 bg-black/20 px-3 py-1 rounded-full border border-transparent hover:border-neon-blue/50"><i class="fa-solid fa-arrow-left"></i> Voltar</a>
+                <span class="opacity-50">|</span>
+                <button onclick="navigator.share({title: document.title, url: window.location.href})" class="hover:text-neon-blue transition flex items-center gap-2 bg-black/20 px-3 py-1 rounded-full border border-transparent hover:border-neon-blue/50"><i class="fa-solid fa-share-nodes"></i> Compartilhar</button>
+            </div>
         </div>
     </div>
-  </main>
 
-  <footer class="bg-black border-t border-gray-900 text-white py-8 mt-auto text-center">
-    <p class="text-gray-500 text-sm">© 2025 Se Mexe. Direitos Reservados.</p>
-  </footer>
+    <main class="container mx-auto px-5 flex-grow -mt-24 relative z-40 pb-20">
+        
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            
+            <div class="lg:col-span-2 space-y-8">
+                
+                <div id="atividade-info-container" class="bg-dark-surface/90 backdrop-blur-md border border-gray-700 rounded-2xl p-6 shadow-2xl grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <p class="col-span-full text-center text-gray-500 py-10 animate-pulse">Carregando detalhes...</p>
+                </div>
 
-  <script src="js/utils.js"></script>
-  <script src="js/atividade.js"></script>
-  <script>
-      const btn = document.getElementById('hamburger-btn');
-      const menu = document.getElementById('nav-menu-wrapper');
-      if(btn && menu){
-          btn.addEventListener('click', () => {
-              btn.classList.toggle('active');
-              menu.classList.toggle('translate-x-full');
-              menu.classList.toggle('translate-x-0');
-          });
-      }
-  </script>
+                <div id="mapa-section" class="bg-dark-surface border border-gray-700 rounded-2xl p-4 shadow-lg hidden">
+                    <h3 class="text-white font-bold mb-4 flex items-center gap-2">
+                        <i class="fa-solid fa-map-location-dot text-neon-blue"></i> Localização
+                    </h3>
+                    <div id="map" class="w-full h-64 md:h-80 rounded-lg overflow-hidden border border-gray-600"></div>
+                </div>
+
+            </div>
+
+            <div class="space-y-6">
+                
+                <div class="bg-dark-surface border border-gray-700 rounded-2xl p-6 shadow-2xl sticky top-4 z-20">
+                    <button id="participar-btn" disabled class="w-full bg-gray-800 text-gray-500 py-4 rounded-xl font-bold text-lg flex justify-center items-center gap-2 cursor-not-allowed transition-all">
+                        <i class="fa-solid fa-spinner fa-spin"></i> Carregando...
+                    </button>
+                    <p class="text-center text-xs text-gray-500 mt-3">
+                        <i class="fa-solid fa-shield-halved"></i> Confirmação Segura
+                    </p>
+                </div>
+
+                <div class="bg-dark-surface border border-gray-700 rounded-2xl p-6 shadow-xl">
+                    <div id="participantes-container">
+                        <p class="text-center text-gray-500 text-sm">Carregando lista...</p>
+                    </div>
+                </div>
+
+                <div id="chat-atividade-container" class="bg-dark-surface border border-gray-700 rounded-2xl p-6 shadow-xl hidden">
+                    <div class="flex justify-between items-center mb-4 border-b border-gray-700 pb-2">
+                        <h3 class="font-bold text-white flex items-center gap-2">
+                            <i class="fa-regular fa-comments text-neon-blue"></i> Chat
+                        </h3>
+                        <span id="chat-status-badge" class="text-[10px] font-bold px-2 py-0.5 rounded bg-green-500/20 text-green-400 border border-green-500">Ativo</span>
+                    </div>
+
+                    <div id="box-mensagens" class="bg-[#0a0a0a] rounded-lg p-3 h-64 overflow-y-auto mb-3 border border-gray-800 text-sm space-y-2 scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-transparent">
+                        <p class="text-center text-gray-600 text-xs mt-10">Carregando...</p>
+                    </div>
+
+                    <form id="form-chat-atividade" class="flex gap-2">
+                        <input type="text" id="input-msg-atividade" placeholder="Mensagem..." autocomplete="off" class="flex-1 bg-dark-highlight border border-gray-700 text-white text-sm rounded-lg px-3 py-2 focus:outline-none focus:border-neon-blue transition">
+                        <button type="submit" class="bg-neon-blue text-black w-10 h-10 rounded-lg flex items-center justify-center hover:bg-white transition">
+                            <i class="fa-solid fa-paper-plane text-sm"></i>
+                        </button>
+                    </form>
+                    <p id="aviso-expiracao" class="hidden text-center text-red-400 text-xs mt-2 font-bold bg-red-500/10 p-1 rounded">
+                        Chat encerrado (24h após evento).
+                    </p>
+                </div>
+
+            </div>
+        </div>
+    </main>
+
+    <footer class="bg-black border-t border-gray-900 text-white py-12 mt-auto text-center">
+        <h4 class="text-2xl font-black italic mb-2 text-white flex justify-center items-center gap-2"><i class="fa-solid fa-bolt text-neon-blue"></i> Se Mexe</h4>
+        <p class="text-gray-500 text-sm">&copy; 2025 Se Mexe. Direitos Reservados.</p>
+    </footer>
+
+    <div id="modal-fairplay" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-[100] hidden flex items-center justify-center p-4 opacity-0 transition-opacity duration-300">
+        <div class="bg-dark-surface border border-gray-700 rounded-xl shadow-2xl p-6 w-full max-w-sm transform scale-95 transition-transform duration-300">
+            
+            <h3 class="text-xl font-bold text-white mb-4 text-center">
+                Avaliar <span id="fp-nome-jogador" class="text-neon-blue">Jogador</span>
+            </h3>
+
+            <form id="form-fairplay" class="space-y-4">
+                <input type="hidden" id="fp-avaliado-id">
+                
+                <div class="text-center mb-4">
+                    <p class="text-gray-300 text-sm mb-2">O jogador compareceu?</p>
+                    <div class="flex justify-center gap-4">
+                        <label class="cursor-pointer">
+                            <input type="radio" name="fp-compareceu" value="true" checked class="peer sr-only">
+                            <div class="bg-gray-800 border border-gray-600 px-4 py-2 rounded text-gray-400 peer-checked:bg-green-500/20 peer-checked:text-green-400 peer-checked:border-green-500 transition text-sm">Sim</div>
+                        </label>
+                        <label class="cursor-pointer">
+                            <input type="radio" name="fp-compareceu" value="false" class="peer sr-only">
+                            <div class="bg-gray-800 border border-gray-600 px-4 py-2 rounded text-gray-400 peer-checked:bg-red-500/20 peer-checked:text-red-400 peer-checked:border-red-500 transition text-sm">Não</div>
+                        </label>
+                    </div>
+                </div>
+
+                <div id="fp-criterios">
+                    <div class="mb-3">
+                        <label class="block text-gray-400 text-xs uppercase font-bold mb-1">Foi respeitoso?</label>
+                        <input type="range" id="fp-respeito" min="1" max="5" value="5" class="w-full accent-neon-blue h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer">
+                        <div class="flex justify-between text-xs text-gray-500 mt-1">
+                            <span>Péssimo</span>
+                            <span>Excelente</span>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="block text-gray-400 text-xs uppercase font-bold mb-1">Jogou Limpo?</label>
+                        <input type="range" id="fp-jogolimpo" min="1" max="5" value="5" class="w-full accent-neon-pink h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer">
+                        <div class="flex justify-between text-xs text-gray-500 mt-1">
+                            <span>Desleal</span>
+                            <span>Exemplar</span>
+                        </div>
+                    </div>
+                </div>
+
+                <textarea id="fp-comentario" rows="2" placeholder="Comentário opcional..." class="w-full bg-dark-highlight border border-gray-700 text-white text-sm rounded p-2 focus:border-neon-blue outline-none"></textarea>
+
+                <div class="flex gap-3 pt-2">
+                    <button type="button" onclick="window.fecharModalFairplay()" class="flex-1 bg-transparent border border-gray-600 text-gray-300 py-2 rounded hover:bg-gray-800 transition text-sm font-bold">Cancelar</button>
+                    <button type="submit" class="flex-1 bg-neon-blue text-black font-bold py-2 rounded hover:bg-white transition shadow-lg text-sm">Enviar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/atividade.js"></script>
+    
+    <script>
+        const btn = document.getElementById('hamburger-btn');
+        const menu = document.getElementById('nav-menu-wrapper');
+        if(btn && menu){
+            btn.addEventListener('click', () => {
+                btn.classList.toggle('active');
+                menu.classList.toggle('translate-x-full');
+                menu.classList.toggle('translate-x-0');
+            });
+        }
+    </script>
 </body>
 </html>
