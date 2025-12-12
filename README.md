@@ -9,17 +9,6 @@
 
 O **Se Mexe** é uma plataforma web desenvolvida para resolver o caos da organização de esportes amadores. Chega de listas confusas no WhatsApp! Nossa aplicação centraliza a criação de partidas, controle de presença, comunicação em tempo real e avaliação de jogadores, tudo em uma interface moderna e responsiva.
 
----
-
-## 📸 Screenshots
-
-*(Adicione prints das telas aqui, ex: pasta `/screenshots`)*
-
-| Landing Page | Dashboard | Perfil do Usuário |
-|:---:|:---:|:---:|
-| ![Home](https://via.placeholder.com/300x150?text=Home+Hero) | ![Dashboard](https://via.placeholder.com/300x150?text=Minhas+Atividades) | ![Perfil](https://via.placeholder.com/300x150?text=Perfil+Fairplay) |
-
----
 
 ## Funcionalidades
 
