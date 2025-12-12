@@ -1,350 +1,285 @@
-document.addEventListener('DOMContentLoaded', async () => {
-    // Carrega o menu se a função existir (utils.js)
-    if (typeof atualizarMenu === 'function') atualizarMenu();
+let socket = null;
+let chatAberto = false;
+let chatMinimizado = false;
 
+document.addEventListener('DOMContentLoaded', async () => {
     const params = new URLSearchParams(window.location.search);
     const userId = params.get('id');
     const token = localStorage.getItem('token');
-    const meuUser = getUsuarioLogado(); // Pega dados do localStorage
+    const meuUser = getUsuarioLogado();
 
-    // Redireciona se não tiver ID na URL
-    if (!userId || userId === 'undefined') { 
-        window.location.href = 'index.html'; 
-        return; 
-    }
-
-    // Se for meu perfil, redireciona para a página de edição/perfil próprio
-    if (meuUser && (userId.toString() === meuUser.id?.toString() || userId.toString() === meuUser._id?.toString())) {
+    if (!userId) { window.location.href = 'index.html'; return; }
+    
+    // Se for meu próprio perfil, redireciona para edição
+    if (meuUser && (userId === meuUser.id || userId === meuUser._id)) {
         window.location.href = 'perfil.html';
         return;
     }
 
-    // --- Elementos da Interface ---
-    const btnAdd = document.getElementById('btn-add');
-    const btnPending = document.getElementById('btn-pending');
-    const areaAmigo = document.getElementById('area-amigo');
-    const btnRemove = document.getElementById('btn-remove');
-    const btnMsg = document.getElementById('btn-mensagem');
-    const actionsContainer = document.getElementById('friend-actions');
+    // Elementos da Interface
+    const els = {
+        nome: document.getElementById('display-nome'),
+        local: document.getElementById('display-local'),
+        bio: document.getElementById('display-bio'),
+        insta: document.getElementById('display-instagram'),
+        img: document.getElementById('profile-img'),
+        icon: document.getElementById('profile-icon'),
+        actions: document.getElementById('friend-action-area'),
+        fairplay: document.getElementById('stat-fairplay'),
+        faltas: document.getElementById('stat-faltas'),
+        esportes: document.getElementById('container-esportes'),
+        badge: document.getElementById('badge-area')
+    };
 
-    // --- Variáveis do Chat ---
-    let socket;
-    let chatAmigoIdAtual = null; // Guarda o ID de com quem estamos falando agora
-    const chatWindow = document.getElementById('chat-window');
-    const chatMessages = document.getElementById('chat-messages');
-    const chatInput = document.getElementById('chat-input');
-    const btnCloseChat = document.getElementById('chat-close');
-    const btnSendChat = document.getElementById('chat-send');
+    let dadosAmigo = null;
 
-    // --- 1. CONFIGURAÇÃO DO SOCKET.IO ---
-    if (typeof io !== 'undefined' && token) {
-        socket = io({
-            auth: { token: token } // Autentica no socket
-        });
-
-        // Ouve mensagens chegando em tempo real
-        socket.on('mensagem_recebida', (msg) => {
-            // Só mostra na tela se a janela estiver aberta E for conversa com essa pessoa
-            if (!chatWindow.classList.contains('hidden') && 
-                (msg.remetenteId === chatAmigoIdAtual || msg.destinatarioId === chatAmigoIdAtual)) {
-                
-                const souEu = msg.remetenteId.toString() === (meuUser.id || meuUser._id).toString();
-                adicionarMensagemNaTela(msg.conteudo || msg.texto, souEu);
-                rolarParaBaixo();
-            }
-        });
-    }
-
-    // Eventos de UI do Chat
-    if (btnCloseChat) {
-        btnCloseChat.addEventListener('click', () => {
-            chatWindow.classList.add('hidden');
-            chatWindow.style.display = 'none';
-            chatAmigoIdAtual = null; // Limpa o ID para não receber msg errada
-        });
-    }
-
-    if (btnSendChat) {
-        btnSendChat.addEventListener('click', enviarMensagem);
-    }
-
-    if (chatInput) {
-        chatInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') enviarMensagem();
-        });
-    }
-
-    // --- 2. CARREGAR DADOS DO USUÁRIO ---
     try {
+        // 1. Conecta Socket (se logado)
+        if (token && typeof io !== 'undefined') {
+            socket = io({ auth: { token } });
+            
+            // Ouvinte Global de Mensagens
+            socket.on('mensagem_recebida', (msg) => {
+                // Se a janela estiver aberta e for desse remetente, mostra a mensagem
+                const idAtual = document.getElementById('chat-destinatario-id').value;
+                if (chatAberto && (msg.remetenteId === idAtual || msg.destinatarioId === idAtual)) {
+                    renderizarMensagemChat(msg, msg.remetenteId === (meuUser.id || meuUser._id));
+                } else {
+                    // Opcional: Tocar som ou mostrar notificação se o chat estiver fechado
+                    if(!chatAberto) showToast(`Nova mensagem de ${msg.remetenteId}`, 'info');
+                }
+            });
+        }
+
+        // 2. Carrega Perfil
         const res = await fetch(`/api/users/${userId}`);
-        
         if (!res.ok) throw new Error('Usuário não encontrado');
-        
-        const user = await res.json();
-        
-        document.getElementById('perfil-nome').textContent = user.nome;
-        document.getElementById('perfil-email').textContent = user.email;
+        dadosAmigo = await res.json();
 
-        const avatarEl = document.getElementById('avatar-letra');
-        if (user.avatar && user.avatar.includes('fa-')) {
-            avatarEl.textContent = '';
-            avatarEl.innerHTML = `<i class="${user.avatar}"></i>`;
+        // Preenche UI
+        els.nome.innerText = dadosAmigo.nome;
+        els.local.innerHTML = dadosAmigo.cidade ? `<i class="fa-solid fa-location-dot text-neon-blue mr-1"></i> ${dadosAmigo.cidade}` : '';
+        if(dadosAmigo.bio) els.bio.innerText = dadosAmigo.bio;
+        if(dadosAmigo.instagram) els.insta.innerText = dadosAmigo.instagram;
+
+        // Avatar
+        if (dadosAmigo.avatar && dadosAmigo.avatar.startsWith('data:image')) {
+            els.img.src = dadosAmigo.avatar; els.img.classList.remove('hidden'); els.icon.classList.add('hidden');
         } else {
-            avatarEl.textContent = user.nome.charAt(0).toUpperCase();
+            els.img.classList.add('hidden'); els.icon.classList.remove('hidden');
         }
 
+        // Stats
+        if (dadosAmigo.fairplayNota !== undefined) {
+            els.fairplay.innerText = dadosAmigo.fairplayNota.toFixed(1);
+            if(dadosAmigo.fairplayNota >= 4.5) els.fairplay.className = "block text-2xl font-bold text-green-400";
+            else if(dadosAmigo.fairplayNota < 3) els.fairplay.className = "block text-2xl font-bold text-red-500";
+        }
+        if (dadosAmigo.faltas !== undefined) els.faltas.innerText = dadosAmigo.faltas;
+
+        // Tags de Esporte
+        if (dadosAmigo.esportes && dadosAmigo.esportes.length > 0) {
+            els.esportes.innerHTML = dadosAmigo.esportes.map(e => `<span class="px-2 py-1 bg-dark-highlight border border-gray-700 rounded text-xs text-gray-300">${e}</span>`).join(' ');
+        }
+
+        // 3. Verifica Amizade e Renderiza Botão
         if (token) {
-            actionsContainer.classList.remove('hidden');
-            // Verifica se já são amigos
-            verificarStatusAmizade(user.id || user._id);
+            verificarStatusAmizade(userId, token, els.actions, dadosAmigo);
         }
-        const elNota = document.getElementById('perfil-fairplay');
-    const elFaltas = document.getElementById('perfil-faltas');
 
-    if (elNota && user.fairplayNota !== undefined) {
-        elNota.innerText = user.fairplayNota.toFixed(1); // Ex: 4.8
+    } catch (e) { console.error(e); }
+
+    // --- FUNÇÕES GLOBAIS (Janela Flutuante) ---
+    
+    window.abrirChat = async function() {
+        const chatWin = document.getElementById('floating-chat');
+        const chatBody = document.getElementById('chat-body');
+        const chatHeaderName = document.getElementById('chat-header-nome');
+        const inputId = document.getElementById('chat-destinatario-id');
+
+        if(!chatWin || !dadosAmigo) return;
+
+        // Preenche dados
+        chatHeaderName.innerText = dadosAmigo.nome;
+        inputId.value = dadosAmigo._id || dadosAmigo.id;
+
+        // Abre a janela
+        chatWin.classList.remove('hidden');
+        // Pequeno delay para animação CSS funcionar
+        setTimeout(() => chatWin.classList.remove('translate-y-full'), 10);
+        chatAberto = true;
+        chatMinimizado = false;
+
+        // Carrega Histórico
+        chatBody.innerHTML = '<div class="flex justify-center mt-4"><i class="fa-solid fa-spinner fa-spin text-neon-blue"></i></div>';
         
-        // Cor dinâmica
-        if(user.fairplayNota >= 4.5) elNota.className = "block text-2xl font-bold text-green-400";
-        else if(user.fairplayNota >= 3) elNota.className = "block text-2xl font-bold text-yellow-400";
-        else elNota.className = "block text-2xl font-bold text-red-500";
-    }
-
-    if (elFaltas && user.faltas !== undefined) {
-        elFaltas.innerText = user.faltas;
-    }
-
-    } catch (error) {
-        console.error(error);
-        document.getElementById('perfil-nome').textContent = 'Usuário não encontrado';
-        document.getElementById('lista-atividades').innerHTML = '';
-    }
-
-    // --- 3. CARREGAR ATIVIDADES DO USUÁRIO ---
-    try {
-        const res = await fetch(`/api/atividades/usuario/${userId}`);
-        const atividades = await res.json();
-        renderizarAtividades(atividades);
-    } catch (error) { console.error(error); }
-
-
-    // --- FUNÇÕES DE AMIZADE ---
-    async function verificarStatusAmizade(amigoId) {
         try {
-            const res = await fetch(`/api/amigos/check/${amigoId}`, {
+            const res = await fetch(`/api/chat/historico/${userId}`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
-            const data = await res.json();
+            const mensagens = await res.json();
             
-            // Reseta botões
-            if(btnAdd) btnAdd.classList.add('hidden');
-            if(btnPending) btnPending.classList.add('hidden');
-            if(areaAmigo) {
-                areaAmigo.classList.add('hidden');
-                areaAmigo.style.display = 'none';
-            }
-
-            if (data.status === 'nenhum') {
-                btnAdd.classList.remove('hidden');
-                btnAdd.onclick = () => enviarSolicitacao(amigoId);
+            chatBody.innerHTML = '';
+            const meuId = meuUser.id || meuUser._id;
             
-            } else if (data.status === 'enviado') {
-                btnPending.classList.remove('hidden');
-                btnPending.innerHTML = '<i class="fa-solid fa-clock"></i> Solicitação Enviada';
-            
-            } else if (data.status === 'recebido') {
-                btnPending.classList.remove('hidden');
-                btnPending.innerHTML = '<i class="fa-solid fa-envelope"></i> Pedido Recebido';
-                btnPending.onclick = () => window.location.href = 'perfil.html';
-                btnPending.classList.add('cursor-pointer');
-
-            } else if (data.status === 'aceito') {
-                areaAmigo.classList.remove('hidden');
-                areaAmigo.style.display = 'flex';
-                
-                // Configura botão de remover
-                const novoBtnRemove = btnRemove.cloneNode(true);
-                if(btnRemove.parentNode) btnRemove.parentNode.replaceChild(novoBtnRemove, btnRemove);
-                novoBtnRemove.onclick = () => removerAmizade(amigoId, document.getElementById('perfil-nome').textContent);
-                
-                // Configura botão de mensagem
-                const novoBtnMsg = btnMsg.cloneNode(true);
-                if(btnMsg.parentNode) btnMsg.parentNode.replaceChild(novoBtnMsg, btnMsg);
-                novoBtnMsg.onclick = () => abrirChat(amigoId, document.getElementById('perfil-nome').textContent);
-            }
-        } catch (error) { console.error(error); }
-    }
-
-    async function enviarSolicitacao(friendId) {
-        const original = btnAdd.innerHTML;
-        btnAdd.disabled = true;
-        btnAdd.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
-
-        try {
-            const res = await fetch('/api/amigos/solicitar', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-                body: JSON.stringify({ amigoId: friendId })
-            });
-
-            if (res.ok) {
-                showToast('Solicitação enviada!', 'success');
-                verificarStatusAmizade(friendId);
-            } else {
-                const data = await res.json();
-                showToast(data.error, 'warning');
-                btnAdd.disabled = false;
-                btnAdd.innerHTML = original;
-            }
-        } catch (error) {
-            showToast('Erro de conexão.', 'error');
-            btnAdd.disabled = false;
-            btnAdd.innerHTML = original;
-        }
-    }
-
-    async function removerAmizade(friendId, nomeAmigo) {
-        let confirmado = await showConfirmModal(`Desfazer amizade com ${nomeAmigo}?`, 'Sim, desfazer', 'Cancelar');
-        if (!confirmado) return;
-
-        try {
-            const res = await fetch(`/api/amigos/${friendId}`, {
-                method: 'DELETE',
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-
-            if (res.ok) {
-                showToast('Amizade desfeita.', 'success');
-                verificarStatusAmizade(friendId);
-            } else {
-                showToast('Erro ao remover.', 'error');
-            }
-        } catch (error) { showToast('Erro de conexão.', 'error'); }
-    }
-
-
-    // --- FUNÇÕES DO CHAT ---
-    function abrirChat(amigoId, nomeAmigo) {
-        chatAmigoIdAtual = amigoId;
-        chatWindow.classList.remove('hidden');
-        chatWindow.style.display = 'flex';
-        document.getElementById('chat-amigo-nome').textContent = nomeAmigo;
-        
-        carregarHistorico(amigoId);
-        setTimeout(() => chatInput.focus(), 100);
-    }
-
-    async function carregarHistorico(amigoId) {
-        chatMessages.innerHTML = '<p class="text-center text-gray-600 text-xs py-4">Carregando...</p>';
-        try {
-            const res = await fetch(`/api/chat/historico/${amigoId}`, { 
-                headers: { 'Authorization': `Bearer ${token}` } 
-            });
-            const msgs = await res.json();
-            chatMessages.innerHTML = '';
-            
-            if (msgs.length === 0) {
-                 chatMessages.innerHTML = '<p class="text-center text-gray-500 text-xs mt-4">Nenhuma mensagem ainda.</p>';
-            }
-
-            msgs.forEach(m => {
-                const remetenteId = m.remetente._id || m.remetente; 
-                const meuId = meuUser._id || meuUser.id;
+            mensagens.forEach(msg => {
+                const remetenteId = msg.remetente._id || msg.remetente;
                 const souEu = remetenteId.toString() === meuId.toString();
-                adicionarMensagemNaTela(m.conteudo || m.texto, souEu);
+                renderizarMensagemChat(msg, souEu);
             });
-            rolarParaBaixo();
-        } catch (e) { 
-            chatMessages.innerHTML = '<p class="text-center text-gray-500 text-xs">Erro ao carregar mensagens.</p>'; 
+            chatBody.scrollTop = chatBody.scrollHeight;
+
+        } catch (e) {
+            chatBody.innerHTML = '<p class="text-red-500 text-xs text-center mt-2">Erro ao carregar.</p>';
         }
-    }
+    };
 
-    async function enviarMensagem() {
-        const texto = chatInput.value.trim();
-        if (!texto || !chatAmigoIdAtual) return;
+    window.fecharChat = function() {
+        const chatWin = document.getElementById('floating-chat');
+        chatWin.classList.add('translate-y-full');
+        setTimeout(() => chatWin.classList.add('hidden'), 300);
+        chatAberto = false;
+    };
 
-        chatInput.value = ''; // Limpa input
-        adicionarMensagemNaTela(texto, true); // Mostra na tela (otimista)
-        rolarParaBaixo();
+    window.toggleMinimizarChat = function() {
+        const chatWin = document.getElementById('floating-chat');
+        const body = document.getElementById('chat-body');
+        const form = document.getElementById('chat-form');
+        
+        if (chatMinimizado) {
+            // Maximiza
+            body.classList.remove('hidden');
+            form.classList.remove('hidden');
+            chatWin.style.transform = 'translateY(0)';
+        } else {
+            // Minimiza (esconde corpo, mantém header)
+            body.classList.add('hidden');
+            form.classList.add('hidden');
+            // Opcional: ajustar altura se necessário, mas ocultar filhos já funciona visualmente
+        }
+        chatMinimizado = !chatMinimizado;
+    };
 
-        try {
-            const res = await fetch('/api/chat/enviar', {
-                method: 'POST',
-                headers: { 
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                },
-                body: JSON.stringify({ 
-                    destinatarioId: chatAmigoIdAtual, 
-                    texto: texto 
-                })
-            });
+    // Enviar Mensagem
+    const formChat = document.getElementById('chat-form');
+    if(formChat) {
+        formChat.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const input = document.getElementById('chat-input');
+            const texto = input.value.trim();
+            const destId = document.getElementById('chat-destinatario-id').value;
+            
+            if(!texto) return;
+            
+            input.value = '';
 
-            if (res.ok) {
-                // SUCESSO NO BANCO -> AVISA O SOCKET
-                if(socket && meuUser) {
-                    // CORREÇÃO AQUI: Garante que pega o ID correto
-                    const meuIdCorreto = meuUser._id || meuUser.id;
-                    
+            // 1. Renderiza Imediatamente (Otimista)
+            const msgTemp = { conteudo: texto, data_envio: new Date() }; // 'conteudo' para compatibilidade visual
+            renderizarMensagemChat(msgTemp, true); // true = sou eu
+
+            // 2. Envia para API (Salvar no banco)
+            try {
+                const res = await fetch('/api/chat/enviar', { // Rota POST que já existe em routes/chat.js
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                    body: JSON.stringify({ destinatarioId: destId, texto: texto })
+                });
+                
+                // 3. Emite Socket (Para o outro receber em tempo real)
+                if(res.ok) {
+                    const msgSalva = await res.json();
                     socket.emit('enviar_mensagem', {
-                        destinatarioId: chatAmigoIdAtual,
-                        texto: texto,
-                        remetenteId: meuIdCorreto // Envia o ID certo pro servidor
+                        remetenteId: meuUser.id || meuUser._id,
+                        destinatarioId: destId,
+                        texto: texto
                     });
                 }
-            } else {
-                console.error('Erro ao salvar mensagem no servidor.');
-            }
-
-        } catch (error) {
-            console.error('Erro de conexão:', error);
-        }
-    }
-
-    function adicionarMensagemNaTela(texto, souEu) {
-        const div = document.createElement('div');
-        div.className = `flex ${souEu ? 'justify-end' : 'justify-start'}`;
-        div.innerHTML = `<div class="${souEu ? 'bg-neon-blue text-black' : 'bg-gray-700 text-white'} px-3 py-2 rounded-lg max-w-[80%] text-sm break-words shadow-sm">${texto}</div>`;
-        chatMessages.appendChild(div);
-    }
-
-    function rolarParaBaixo() {
-        chatMessages.scrollTop = chatMessages.scrollHeight;
-    }
-
-
-    // --- RENDERIZAR ATIVIDADES NA PÁGINA ---
-    function renderizarAtividades(atividades) {
-        const container = document.getElementById('lista-atividades');
-        
-        if (!atividades || atividades.length === 0) {
-            container.innerHTML = '<p class="col-span-full text-center text-gray-500 py-10">Este usuário não tem atividades públicas recentes.</p>';
-            return;
-        }
-
-        container.innerHTML = atividades.map(a => {
-            const idAtividade = a._id || a.id;
-            
-            return `
-            <div class="bg-dark-highlight border border-gray-700 p-4 rounded-lg hover:border-neon-blue transition cursor-pointer group" onclick="window.location.href='atividade.html?id=${idAtividade}'">
-                <div class="flex justify-between items-start mb-2">
-                    <h4 class="font-bold text-white truncate w-3/4 group-hover:text-neon-blue transition">${a.titulo}</h4>
-                    <span class="text-xs bg-neon-blue/10 text-neon-blue px-2 py-1 rounded border border-neon-blue/20">${a.esporte}</span>
-                </div>
-                <div class="space-y-1">
-                    <p class="text-gray-400 text-sm flex items-center gap-2"><i class="fa-solid fa-location-dot w-5 text-center text-gray-600"></i> ${a.local}</p>
-                    <p class="text-gray-400 text-sm flex items-center gap-2"><i class="fa-solid fa-calendar-days w-5 text-center text-gray-600"></i> ${new Date(a.data_hora).toLocaleDateString()}</p>
-                </div>
-            </div>
-        `}).join('');
-    }
-
-    // Função auxiliar para garantir que pega o usuário
-    function getUsuarioLogado() {
-        try { 
-            return JSON.parse(localStorage.getItem('userInfo')); 
-        } catch { 
-            return null; 
-        }
+            } catch (err) { console.error(err); }
+        });
     }
 });
+
+function renderizarMensagemChat(msg, souEu) {
+    const box = document.getElementById('chat-body');
+    const div = document.createElement('div');
+    div.className = `flex mb-2 ${souEu ? 'justify-end' : 'justify-start'}`;
+    
+    // Suporte para msg vinda do banco (msg.texto) ou socket (msg.conteudo)
+    const texto = msg.texto || msg.conteudo;
+    
+    div.innerHTML = `
+        <div class="max-w-[75%] px-3 py-2 rounded-lg text-sm break-words ${souEu ? 'bg-neon-blue text-black rounded-br-none' : 'bg-gray-700 text-white rounded-bl-none'}">
+            ${texto}
+        </div>
+    `;
+    box.appendChild(div);
+    box.scrollTop = box.scrollHeight;
+}
+
+async function verificarStatusAmizade(amigoId, token, container, dadosAmigo) {
+    try {
+        const res = await fetch('/api/amigos', { headers: { 'Authorization': `Bearer ${token}` } });
+        const amigos = await res.json();
+        const jaEhAmigo = amigos.some(a => (a._id || a.id) === amigoId);
+
+        if (jaEhAmigo) {
+            // Usa a função global window.abrirChatGlobal definida no utils.js
+            container.innerHTML = `
+                <div class="flex gap-2">
+                    <button onclick="window.abrirChatGlobal('${amigoId}', '${dadosAmigo.nome}', '${dadosAmigo.avatar || ''}')" class="bg-neon-blue text-black px-6 py-2 rounded-full font-bold hover:bg-white transition flex items-center gap-2 shadow-lg shadow-neon-blue/20">
+                        <i class="fa-solid fa-comment-dots"></i> Mensagem
+                    </button>
+                    <button onclick="removerAmigo('${amigoId}')" class="w-10 h-10 rounded-full border border-gray-600 text-gray-400 hover:text-neon-pink hover:border-neon-pink transition flex items-center justify-center">
+                        <i class="fa-solid fa-user-xmark"></i>
+                    </button>
+                </div>
+            `;
+        } else {
+            // SE NÃO: Botão "Adicionar"
+            container.innerHTML = `
+                <button onclick="enviarSolicitacao('${amigoId}')" id="btn-add" class="bg-dark-highlight border border-gray-600 text-white px-6 py-2 rounded-full font-bold hover:border-neon-blue hover:text-neon-blue transition flex items-center gap-2">
+                    <i class="fa-solid fa-user-plus"></i> Adicionar
+                </button>
+            `;
+        }
+    } catch (e) { console.error(e); }
+}
+
+// ... Funções globais (enviarSolicitacao, removerAmigo) mantidas iguais ...
+window.enviarSolicitacao = async function(amigoId) {
+    const btn = document.getElementById('btn-add');
+    if(btn) { btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>'; }
+    try {
+        const res = await fetch('/api/amigos/solicitar', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('token')}` },
+            body: JSON.stringify({ amigoId })
+        });
+        if (res.ok) {
+            showToast('Solicitação enviada!', 'success');
+            if(btn) { btn.innerHTML = '<i class="fa-solid fa-check"></i> Enviado'; btn.className = "bg-green-500 text-white px-6 py-2 rounded-full text-sm font-bold flex items-center gap-2"; }
+        } else {
+            const data = await res.json();
+            showToast(data.error || 'Erro', 'warning');
+            if(btn) { btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-user-plus"></i> Adicionar'; }
+        }
+    } catch (e) { console.error(e); }
+};
+
+window.removerAmigo = async function(amigoId) {
+    if(!confirm('Remover este amigo?')) return;
+    try {
+        const res = await fetch(`/api/amigos/${amigoId}`, {
+            method: 'DELETE',
+            headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+        });
+        if(res.ok) {
+            showToast('Amigo removido.', 'success');
+            setTimeout(() => location.reload(), 1000);
+        }
+    } catch (e) { console.error(e); }
+};
+
+function getUsuarioLogado() {
+    try { return JSON.parse(localStorage.getItem('userInfo')); } catch { return null; }
+}

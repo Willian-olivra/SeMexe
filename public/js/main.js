@@ -59,65 +59,109 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    function renderizarAtividades(atividades) {
+   function renderizarAtividades(atividades) {
         if (!eventList) return;
         
-        // --- CÓDIGO DE DEPURAÇÃO (MANTIDO) ---
-        if (atividades.length > 0) {
-            console.log("🔍 --- INÍCIO DA INSPEÇÃO ---");
-            console.log("🔍 OBJETO COMPLETO:", atividades[0]);
-            console.log("🔍 TENTANDO LER OS IDS:");
-            console.log("👉 id:", atividades[0].id);
-            console.log("👉 _id:", atividades[0]._id);
-            console.log("👉 id_atividade:", atividades[0].id_atividade);
-            console.log("🔍 --- FIM DA INSPEÇÃO ---");
-        }
-        // -------------------------------------------------------------
-
         if (atividades.length === 0) {
-            eventList.innerHTML = `<div class="col-span-full text-center py-10"><p class="text-gray-500">Nenhuma atividade.</p></div>`;
+            eventList.innerHTML = `<div class="col-span-full text-center py-10"><p class="text-gray-500">Nenhuma atividade encontrada.</p></div>`;
             return;
         }
 
         eventList.innerHTML = atividades.map(a => {
-            // Tenta pegar o ID de todas as formas possíveis
             const atividadeId = a._id || a.id || a.id_atividade;
-
+            const linkHref = atividadeId ? `atividade.html?id=${atividadeId}` : '#';
+            
             const icone = getIconeEsporte(a.esporte);
             const dataF = formatarDataHora(a.data_hora);
-            const badgeClass = a.lotada ? 'bg-neon-pink/10 text-neon-pink' : 'bg-neon-blue/10 text-neon-blue';
-            const iconeVisibilidade = a.visibilidade === 'friends' ? `<i class="fa-solid fa-user-group text-neon-pink ml-2" title="Amigos"></i>` : '';
+            
+            // --- NOVO: Lógica de Estilo por Esporte ---
+            let bgClass = "from-gray-800 to-gray-900"; // Padrão
+            let borderClass = "border-gray-700";
+            let iconColor = "text-gray-400";
 
-            // Se não tiver ID, coloca '#' para não quebrar a página, mas avisa no console
-            const linkHref = atividadeId ? `atividade.html?id=${atividadeId}` : '#';
-            if (!atividadeId) console.error("❌ ERRO: Atividade sem ID gerando link quebrado!", a);
+            switch(a.esporte) {
+                case 'Futebol':
+                    bgClass = "from-green-900/40 to-gray-900"; // Gradiente Verde sutil
+                    borderClass = "border-green-800/50 hover:border-green-500";
+                    iconColor = "text-green-400";
+                    break;
+                case 'Vôlei':
+                    bgClass = "from-yellow-900/40 to-gray-900"; // Gradiente Amarelo
+                    borderClass = "border-yellow-800/50 hover:border-yellow-500";
+                    iconColor = "text-yellow-400";
+                    break;
+                case 'Basquete':
+                    bgClass = "from-orange-900/40 to-gray-900"; // Gradiente Laranja
+                    borderClass = "border-orange-800/50 hover:border-orange-500";
+                    iconColor = "text-orange-400";
+                    break;
+                case 'Natação':
+                    bgClass = "from-cyan-900/40 to-gray-900"; // Gradiente Ciano
+                    borderClass = "border-cyan-800/50 hover:border-cyan-500";
+                    iconColor = "text-cyan-400";
+                    break;
+                case 'Corrida':
+                    bgClass = "from-red-900/40 to-gray-900"; // Gradiente Vermelho
+                    borderClass = "border-red-800/50 hover:border-red-500";
+                    iconColor = "text-red-400";
+                    break;
+            }
+            // ------------------------------------------
 
-            // ADICIONEI capitalize NAS CLASSES ABAIXO (Título, Esporte, Local e Org)
+            // Ícone de visibilidade (Amigos)
+            const iconeVisibilidade = a.visibilidade === 'friends' 
+                ? `<div class="absolute top-3 right-3 bg-black/50 backdrop-blur rounded-full p-1.5 border border-gray-600" title="Só Amigos"><i class="fa-solid fa-user-group text-neon-pink text-xs"></i></div>` 
+                : '';
+
             return `
-                <article class="bg-dark-surface border border-gray-800 rounded-xl shadow-lg hover:-translate-y-2 hover:border-neon-blue/50 transition duration-300 flex flex-col h-full">
-                    <div class="p-5 border-b border-gray-800 flex items-center gap-4 bg-black/20">
-                        <i class="${icone} text-3xl text-neon-blue"></i>
-                        <div class="flex-1 min-w-0">
-                            <h3 class="text-xl font-bold text-white truncate capitalize" title="${a.titulo}">${a.titulo}</h3>
-                            ${iconeVisibilidade}
+                <article class="relative group bg-gradient-to-br ${bgClass} border ${borderClass} rounded-2xl shadow-xl overflow-hidden hover:-translate-y-1 hover:shadow-2xl transition-all duration-300 flex flex-col h-full">
+                    
+                    ${iconeVisibilidade}
+
+                    <div class="p-6 pb-2 flex items-center justify-between relative overflow-hidden">
+                        <i class="${icone} absolute -right-6 -top-6 text-9xl opacity-5 transform rotate-12 group-hover:rotate-0 transition-transform duration-500 pointer-events-none"></i>
+                        
+                        <div class="z-10">
+                            <span class="text-xs font-bold uppercase tracking-wider ${iconColor} mb-1 block">${a.esporte}</span>
+                            <h3 class="text-xl font-bold text-white truncate capitalize leading-tight w-48" title="${a.titulo}">${a.titulo}</h3>
+                        </div>
+                        
+                        <div class="z-10 w-12 h-12 rounded-full bg-black/30 flex items-center justify-center border border-white/10 shadow-inner">
+                            <i class="${icone} text-2xl ${iconColor}"></i>
                         </div>
                     </div>
-                    <div class="p-5 flex-grow space-y-3">
-                        <p class="text-gray-400 flex items-center gap-3 capitalize"><i class="fa-solid fa-futbol w-5 text-gray-600"></i> ${a.esporte}</p>
-                        <p class="text-gray-400 flex items-center gap-3 capitalize"><i class="fa-solid fa-location-dot w-5 text-gray-600"></i> ${a.local}</p>
-                        <p class="text-gray-400 flex items-center gap-3"><i class="fa-solid fa-calendar-days w-5 text-gray-600"></i> ${dataF}</p>
-                        <p class="text-gray-400 flex items-center gap-3">
-                            <i class="fa-solid fa-user w-5 text-gray-600"></i> 
-                            <span class="text-sm">Org: 
-                                <a href="perfilUsuario.html?id=${a.id_usuario}" class="text-white hover:text-neon-blue hover:underline transition font-bold capitalize">
-                                    ${a.criador_nome || 'Anônimo'}
-                                </a>
-                            </span>
-                        </p>
+
+                    <div class="px-6 py-4 flex-grow space-y-3">
+                        <div class="flex items-start gap-3 text-gray-300 text-sm">
+                            <i class="fa-solid fa-location-dot w-4 mt-0.5 text-gray-500"></i> 
+                            <span class="capitalize line-clamp-2">${a.local}</span>
+                        </div>
+                        <div class="flex items-center gap-3 text-gray-300 text-sm">
+                            <i class="fa-solid fa-calendar-days w-4 text-gray-500"></i> 
+                            <span>${dataF}</span>
+                        </div>
+                        <div class="flex items-center gap-3 text-gray-400 text-xs pt-2 border-t border-white/5">
+                            <div class="flex items-center gap-1">
+                                <i class="fa-solid fa-user-astronaut"></i>
+                                <span class="capitalize hover:text-white transition">${a.criador_nome || 'Anônimo'}</span>
+                            </div>
+                        </div>
                     </div>
-                    <div class="p-5 bg-black/40 flex justify-between items-center gap-3 border-t border-gray-800">
-                        <span class="${badgeClass} border px-3 py-1 rounded-full text-xs font-bold uppercase">${a.vagas_disponiveis}/${a.vagas} vagas</span>
-                        <a href="${linkHref}" class="text-neon-blue hover:text-white font-semibold transition border border-neon-blue hover:bg-neon-blue px-4 py-1.5 rounded-md text-sm">Ver Detalhes</a>
+
+                    <div class="p-4 bg-black/20 flex justify-between items-center mt-auto border-t border-white/5">
+                        <div class="flex flex-col">
+                            <span class="text-[10px] text-gray-500 uppercase font-bold">Vagas</span>
+                            <div class="flex items-baseline gap-1">
+                                <span class="text-lg font-bold ${a.lotada ? 'text-red-500' : 'text-white'}">${a.vagas_disponiveis}</span>
+                                <span class="text-xs text-gray-500">/ ${a.vagas}</span>
+                            </div>
+                        </div>
+
+                        <a href="${linkHref}" class="group/btn relative overflow-hidden bg-dark-base border border-gray-600 text-white px-5 py-2 rounded-lg text-sm font-bold transition-all hover:border-neon-blue hover:text-neon-blue hover:shadow-[0_0_15px_rgba(0,229,255,0.3)]">
+                            <span class="relative z-10 flex items-center gap-2">
+                                Entrar <i class="fa-solid fa-arrow-right group-hover/btn:translate-x-1 transition-transform"></i>
+                            </span>
+                        </a>
                     </div>
                 </article>
             `;

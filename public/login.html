@@ -1,178 +1,164 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-br">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login Seguro - Se Mexe</title>
+    <title>Se Mexe - Login</title>
     <link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAzMjAgNTEyIj48IS0tIUZvbnQgQXdlc29tZSBGcmVlIDYuNS4yIGJ5IEBmb250YXdlc29tZSAtIGh0dHBzOi8vZm9udGF3ZXNvbWUuY29tIExpY2Vuc2UgLSBodHRwczovL2ZvbnRhd2Vzb21lLmNvbS9saWNlbnNlL2ZyZWUgQ29weXJpZ2h0IDIwMjQgRm9udGljb25zLCBJbmMuLS0+PHBhdGggZmlsbD0iIzAwRTVGRiIgZD0iTTI5NiAxNjBIMTgwLjZsNDIuNi0xMjkuOEMyMjcuMiAxNSAyMTUuNyAwIDIwMCAwSDU2QzQ0IDAgMzMuOCA4LjkgMzIuMiAyMC44bC0zMiAyNDBDLTEuNyAyNzUuMiA5LjUgMjg4IDI0IDI4OGgxMTUuNEw5Ni44IDQxNy44Yy00IDE1LjIgNy41IDMwLjIgMjMuMiAzMC4yYzUuOSAwIDExLjYtMi4yIDE1LjgtNi40bDE5Mi0xOTJjMTMuMy0xMy4zIDEyLjUtMzUuNS0yLTQ3Ljh6Ii8+PC9zdmc+" type="image/svg+xml">
-    
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
             theme: {
                 extend: {
-                    colors: { 'neon-blue': '#00E5FF', 'dark-base': '#121212', 'dark-surface': '#1E1E1E' },
-                    fontFamily: { sans: ['Poppins', 'sans-serif'] }
+                    colors: {
+                        'neon-blue': '#00E5FF',
+                        'neon-pink': '#FF007F',
+                        'dark-base': '#121212',
+                        'dark-surface': '#1E1E1E',
+                        'dark-highlight': '#2D2D2D',
+                    },
+                    fontFamily: { sans: ['Poppins', 'sans-serif'] },
+                    backgroundImage: {
+                        // Imagem: Túnel de entrada (simbolizando o acesso)
+                        'hero-pattern': "url('https://images.unsplash.com/photo-1532444458054-01a7dd3e9fca?q=80&w=941&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D')"
+                    }
                 }
             }
         }
     </script>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
-    
     <style>
-        .hidden-step { display: none; }
-        .fade-in { animation: fadeIn 0.5s ease-in-out; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        #nav-menu a { color: #e5e7eb; font-weight: 500; transition: color 0.3s ease; text-shadow: 0 1px 3px rgba(0,0,0,0.5); }
+        #nav-menu a:hover { color: #00E5FF; text-shadow: 0 0 10px rgba(0, 229, 255, 0.8); }
+        .hamburger-toggle .line { transition: all 0.3s ease-in-out; }
+        .hamburger-toggle.active .line-1 { transform: translateY(8px) rotate(45deg); }
+        .hamburger-toggle.active .line-2 { opacity: 0; }
+        .hamburger-toggle.active .line-3 { transform: translateY(-8px) rotate(-45deg); }
+        html { scroll-behavior: smooth; }
+        body.has-bottom-nav footer { padding-bottom: 90px; }
     </style>
 </head>
-<body class="bg-dark-base text-white font-sans flex items-center justify-center min-h-screen px-4">
+<body class="bg-dark-base text-gray-200 font-sans min-h-screen flex flex-col selection:bg-neon-blue selection:text-black">
 
-    <div class="w-full max-w-md bg-dark-surface p-8 rounded-xl shadow-lg border border-gray-800 relative overflow-hidden">
-        
-        <div id="step-1" class="fade-in">
-            <div class="text-center mb-8">
-                <h1 class="text-3xl font-bold text-white italic"><i class="fa-solid fa-bolt text-neon-blue"></i> Se Mexe</h1>
-                <p class="text-gray-400 mt-2">Acesse sua conta</p>
-            </div>
+    <div class="relative w-full h-[55vh] md:h-[65vh] flex flex-col overflow-hidden">
+        <div class="absolute inset-0 bg-hero-pattern bg-cover bg-center bg-fixed animate-[pulse_40s_ease-in-out_infinite] scale-105"></div>
+        <div class="absolute inset-0 bg-gradient-to-b from-black/80 via-black/60 to-dark-base"></div>
 
-            <form id="login-form" class="space-y-5">
-                <div>
-                    <label class="block text-gray-400 text-sm mb-1">Email</label>
-                    <input type="email" id="email" required class="w-full bg-[#121212] border border-gray-700 rounded p-3 text-white focus:border-neon-blue focus:outline-none transition">
-                </div>
-                <div>
-                    <label class="block text-gray-400 text-sm mb-1">Senha</label>
-                    <input type="password" id="password" required class="w-full bg-[#121212] border border-gray-700 rounded p-3 text-white focus:border-neon-blue focus:outline-none transition">
-                </div>
-                <div class="text-right">
-                    <a href="esqueciSenha.html" class="text-neon-blue text-sm hover:underline">Esqueci minha senha</a>
-                </div>
-                <button type="submit" id="btn-login" class="w-full bg-neon-blue text-black font-bold py-3 rounded hover:bg-white transition duration-300">
-                    Entrar
+        <header class="absolute top-0 left-0 w-full z-50 py-6">
+            <nav class="container mx-auto px-5 flex justify-between items-center relative">
+                <a href="index.html" class="text-3xl font-black text-white italic flex items-center gap-2 tracking-tighter drop-shadow-lg">
+                    <i class="fa-solid fa-bolt text-neon-blue"></i> Se<span class="text-neon-blue">Mexe</span>
+                </a>
+                
+                <button id="hamburger-btn" aria-label="Abrir menu principal" class="hamburger-toggle md:hidden flex flex-col gap-1.5 cursor-pointer z-50">
+                    <span class="line line-1 block w-6 h-0.5 bg-neon-blue"></span>
+                    <span class="line line-2 block w-6 h-0.5 bg-neon-blue"></span>
+                    <span class="line line-3 block w-6 h-0.5 bg-neon-blue"></span>
                 </button>
-            </form>
-        </div>
 
-        <div id="step-2" class="hidden-step fade-in text-center">
-            <div class="mb-6">
-                <i class="fa-solid fa-shield-halved text-5xl text-neon-blue mb-4"></i>
-                <h2 class="text-2xl font-bold text-white">Verificação de Segurança</h2>
-                <p class="text-gray-400 text-sm mt-2">Enviamos um código para seu e-mail.</p>
-            </div>
-
-            <form id="verify-form" class="space-y-5">
-                <div>
-                    <input type="text" id="otp-code" placeholder="000000" maxlength="6" required class="w-full bg-[#121212] border border-gray-700 rounded p-3 text-white text-center text-2xl tracking-[10px] focus:border-neon-blue focus:outline-none transition font-mono">
+                <div id="nav-menu-wrapper" class="fixed inset-0 bg-dark-base/95 backdrop-blur-md flex flex-col items-center justify-center gap-8 text-xl transition-transform duration-300 translate-x-full md:translate-x-0 md:static md:bg-transparent md:flex-row md:gap-8 md:text-base md:h-auto md:border-none">
+                    <ul id="nav-menu" class="flex flex-col md:flex-row gap-6 items-center mb-4 md:mb-0"></ul>
                 </div>
+            </nav>
+        </header>
 
-                <button type="submit" id="btn-verify" class="w-full bg-green-500 text-black font-bold py-3 rounded hover:bg-white transition duration-300">
-                    Verificar Código
-                </button>
-            </form>
-            
-            <p class="mt-4 text-xs text-gray-500">Não recebeu? Verifique o Spam.</p>
-        </div>
-
-        <p id="msg-erro" class="text-center text-neon-pink mt-4 text-sm font-bold min-h-[20px]"></p>
-
-        <div id="footer-links" class="mt-6 text-center border-t border-gray-700 pt-4">
-            <p class="text-gray-400 text-sm">Ainda não tem conta? <a href="cadastro.html" class="text-neon-blue font-bold hover:underline">Cadastre-se</a></p>
+        <div class="relative z-30 container mx-auto px-5 flex-grow flex flex-col justify-center text-center pt-20 pb-32">
+            <span class="text-neon-blue font-bold tracking-widest uppercase text-xs md:text-sm mb-2 animate-fade-in-up">Área do Atleta</span>
+            <h1 class="text-4xl md:text-6xl font-black text-white mb-4 drop-shadow-2xl">
+                Bem-vindo de volta
+            </h1>
+            <p class="text-gray-300 max-w-lg mx-auto drop-shadow-md relative z-30">Entre para gerenciar seus jogos e conectar-se com a galera.</p>
         </div>
     </div>
 
-    <script>
-        const step1 = document.getElementById('step-1');
-        const step2 = document.getElementById('step-2');
-        const msg = document.getElementById('msg-erro');
-        const footer = document.getElementById('footer-links');
+    <main class="container mx-auto px-5 flex-grow -mt-24 relative z-40 pb-20">
         
-        let userEmail = ''; // Guarda o email para o passo 2
+        <div class="max-w-md mx-auto bg-dark-surface border border-gray-800 rounded-2xl shadow-2xl p-8 relative overflow-hidden">
+            <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-neon-blue to-transparent"></div>
 
-        // --- PASSO 1: LOGIN (Envia senha, recebe pedido de 2FA) ---
-        document.getElementById('login-form').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
-            const btn = document.getElementById('btn-login');
+            <form id="login-form" class="space-y-5">
+                
+                <div id="step-1">
+                    <div class="space-y-5">
+                        <div>
+                            <label for="email" class="block text-gray-400 font-bold text-xs uppercase tracking-wider mb-2">Email</label>
+                            <div class="relative">
+                                <i class="fa-solid fa-envelope absolute left-3 top-3.5 text-gray-500"></i>
+                                <input type="email" id="email" placeholder="seu@email.com" class="w-full bg-dark-highlight border border-gray-700 text-white rounded-lg p-3 pl-10 focus:outline-none focus:border-neon-blue focus:ring-1 focus:ring-neon-blue transition placeholder-gray-600">
+                            </div>
+                        </div>
 
-            btn.disabled = true;
-            btn.innerText = "Verificando...";
-            msg.innerText = "";
+                        <div>
+                            <label for="senha" class="block text-gray-400 font-bold text-xs uppercase tracking-wider mb-2">Senha</label>
+                            <div class="relative">
+                                <i class="fa-solid fa-key absolute left-3 top-3.5 text-gray-500"></i>
+                                <input type="password" id="senha" placeholder="••••••••" class="w-full bg-dark-highlight border border-gray-700 text-white rounded-lg p-3 pl-10 focus:outline-none focus:border-neon-blue focus:ring-1 focus:ring-neon-blue transition placeholder-gray-600">
+                            </div>
+                            <div class="text-right mt-1">
+                                <a href="esqueciSenha.html" class="text-xs text-gray-500 hover:text-white transition">Esqueceu a senha?</a>
+                            </div>
+                        </div>
 
-            try {
-                const res = await fetch('/api/users/login', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email, password })
-                });
+                        <div class="pt-2">
+                            <button type="submit" id="btn-entrar" class="w-full bg-neon-blue text-black font-bold text-lg py-3 rounded-lg hover:bg-white hover:shadow-[0_0_20px_rgba(0,229,255,0.6)] transition shadow-lg cursor-pointer transform hover:-translate-y-1">
+                                Entrar
+                            </button>
+                        </div>
+                    </div>
+                </div>
 
-                const data = await res.json();
+                <div id="step-2" class="hidden text-center space-y-6">
+                    <div>
+                        <div class="w-16 h-16 bg-dark-highlight rounded-full flex items-center justify-center mx-auto mb-4 border border-gray-600">
+                            <i class="fa-solid fa-shield-halved text-2xl text-neon-blue"></i>
+                        </div>
+                        <h3 class="text-xl font-bold text-white mb-1">Verificação de Segurança</h3>
+                        <p class="text-sm text-gray-400">Enviamos um código para seu e-mail.</p>
+                        <p class="text-xs text-gray-600 mt-1">(Verifique sua caixa de Spam)</p>
+                    </div>
 
-                if (res.ok && data.require2FA) {
-                    // SUCESSO PARCIAL: Senha certa, agora pede código
-                    userEmail = data.email;
+                    <div>
+                        <input type="text" id="codigo-2fa" placeholder="000000" maxlength="6" class="w-full bg-dark-highlight border border-gray-700 text-white text-center text-2xl tracking-[0.5em] font-mono rounded-lg p-4 focus:outline-none focus:border-neon-blue transition">
+                    </div>
+
+                    <div class="pt-2">
+                        <button type="button" id="btn-verificar" class="w-full bg-green-500 text-black font-bold text-lg py-3 rounded-lg hover:bg-white hover:shadow-[0_0_20px_rgba(34,197,94,0.6)] transition shadow-lg cursor-pointer transform hover:-translate-y-1">
+                            Verificar Código
+                        </button>
+                    </div>
                     
-                    // Troca de tela
-                    step1.classList.add('hidden-step');
-                    footer.classList.add('hidden-step');
-                    step2.classList.remove('hidden-step');
-                    
-                    msg.className = "text-center text-green-400 mt-4 text-sm font-bold";
-                    msg.innerText = "Código enviado!";
-                    
-                    document.getElementById('otp-code').focus();
+                    <button type="button" onclick="location.reload()" class="text-sm text-gray-500 hover:text-white underline">Voltar</button>
+                </div>
 
-                } else if (res.ok && data.token) {
-                    // CASO DE LOGIN DIRETO (Se vc desativar 2FA no futuro)
-                    finalizarLogin(data);
-                } else {
-                    throw new Error(data.error || "Login falhou.");
-                }
-            } catch (err) {
-                msg.className = "text-center text-neon-pink mt-4 text-sm font-bold";
-                msg.innerText = err.message;
-                btn.disabled = false;
-                btn.innerText = "Entrar";
-            }
-        });
+                <p class="text-center text-gray-400 text-sm mt-4 border-t border-gray-800 pt-4">
+                    Não tem uma conta? <a href="cadastro.html" class="text-neon-blue font-bold hover:underline">Cadastre-se</a>
+                </p>
+            </form>
+        </div>
+    </main>
 
-        // --- PASSO 2: VERIFICAR CÓDIGO ---
-        document.getElementById('verify-form').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const code = document.getElementById('otp-code').value;
-            const btn = document.getElementById('btn-verify');
-
-            btn.disabled = true;
-            btn.innerText = "Validando...";
-            msg.innerText = "";
-
-            try {
-                const res = await fetch('/api/users/login/verify', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email: userEmail, code })
-                });
-
-                const data = await res.json();
-
-                if (res.ok) {
-                    finalizarLogin(data);
-                } else {
-                    throw new Error(data.error || "Código incorreto.");
-                }
-            } catch (err) {
-                msg.className = "text-center text-neon-pink mt-4 text-sm font-bold";
-                msg.innerText = err.message;
-                btn.disabled = false;
-                btn.innerText = "Verificar Código";
-            }
-        });
-
-        function finalizarLogin(data) {
-            localStorage.setItem('token', data.token);
-            localStorage.setItem('userInfo', JSON.stringify(data.user));
-            window.location.href = 'index.html';
+    <footer class="bg-black border-t border-gray-900 text-white py-12 mt-auto text-center">
+        <h4 class="text-2xl font-black italic mb-2 text-white flex justify-center items-center gap-2"><i class="fa-solid fa-bolt text-neon-blue"></i> Se Mexe</h4>
+        <p class="text-gray-500 text-sm">&copy; 2025 Se Mexe. Direitos Reservados.</p>
+    </footer>
+    
+    <script src="js/utils.js"></script>
+    <script src="js/auth.js"></script>
+    
+    <script>
+        const btn = document.getElementById('hamburger-btn');
+        const menu = document.getElementById('nav-menu-wrapper');
+        if(btn && menu){
+            btn.addEventListener('click', () => {
+                btn.classList.toggle('active');
+                menu.classList.toggle('translate-x-full');
+                menu.classList.toggle('translate-x-0');
+            });
         }
     </script>
 </body>

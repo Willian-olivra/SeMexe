@@ -68,7 +68,7 @@ io.on('connection', (socket) => {
             
             // Entra na sala exclusiva dele (ex: "12345")
             socket.join(userId.toString());
-            console.log(`🔌 User conectado no Socket: ${userId}`);
+            console.log(`User conectado no Socket: ${userId}`);
         } catch (e) {
             console.log('Token de socket inválido');
         }
@@ -77,14 +77,14 @@ io.on('connection', (socket) => {
     // Fallback: Se o frontend emitir "entrar_chat" manualmente
     socket.on('entrar_chat', (id) => {
         socket.join(id.toString());
-        console.log(`🔌 User entrou na sala manualmente: ${id}`);
+        console.log(`User entrou na sala manualmente: ${id}`);
     });
 
     // RECEBE O AVISO DE MENSAGEM DO FRONTEND E REPASSA
     socket.on('enviar_mensagem', (data) => {
         const { destinatarioId, texto, remetenteId } = data;
         
-        console.log(`📨 Mensagem de ${remetenteId} para ${destinatarioId}`);
+        console.log(`Mensagem de ${remetenteId} para ${destinatarioId}`);
 
         // Envia APENAS para o destinatário específico
         // O .to(id) manda para a sala que criamos no .join(userId)
@@ -141,5 +141,5 @@ app.use((req, res) => {
 });
 
 server.listen(PORT, () => {
-  console.log(`\n✅ Servidor rodando em http://localhost:${PORT}`);
+  console.log(`\nServidor rodando em http://localhost:${PORT}`);
 });

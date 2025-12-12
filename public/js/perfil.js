@@ -1,330 +1,252 @@
 document.addEventListener('DOMContentLoaded', async () => {
     const token = localStorage.getItem('token');
-    const userInfo = getUsuarioLogado();
+    if (!token) { window.location.href = 'login.html'; return; }
 
-    // Redireciona se não estiver logado
-    if (!token || !userInfo) { 
-        window.location.href = 'login.html'; 
-        return; 
-    }
+    // Elementos
+    const els = {
+        nomeInput: document.getElementById('input-nome'),
+        emailDisplay: document.getElementById('display-email'),
+        bioInput: document.getElementById('input-bio'),
+        cidadeInput: document.getElementById('input-cidade'),
+        instaInput: document.getElementById('input-instagram'),
+        
+        imgPreview: document.getElementById('profile-img-preview'),
+        iconDefault: document.getElementById('profile-icon-default'),
+        fileInput: document.getElementById('upload-avatar'),
+        loading: document.getElementById('img-loading'),
+        
+        fairplay: document.getElementById('stat-fairplay'),
+        faltas: document.getElementById('stat-faltas'),
+        
+        form: document.getElementById('form-perfil'),
+        btnSalvar: document.getElementById('btn-salvar'),
+        
+        sportTags: document.querySelectorAll('.sport-tag'),
+        
+        // Listas
+        boxSolicitacoes: document.getElementById('lista-solicitacoes'),
+        boxAmigos: document.getElementById('lista-amigos')
+    };
 
-    // --- 1. Exibição do Perfil (Nome, Email e Avatar) ---
-    document.getElementById('perfil-nome').textContent = userInfo.nome || 'Usuário';
-    document.getElementById('perfil-email').textContent = userInfo.email || '';
+    let avatarBase64 = null;
+    let meusEsportes = [];
 
-    const avatarElement = document.getElementById('avatar-letra');
-    if (avatarElement) {
-        if (userInfo.avatar && userInfo.avatar.includes('fa-')) {
-            // Se for um ícone (FontAwesome)
-            avatarElement.textContent = ''; 
-            avatarElement.innerHTML = `<i class="${userInfo.avatar} text-2xl"></i>`; 
-        } else {
-            // Se for apenas letra inicial
-            avatarElement.textContent = (userInfo.nome || '?').charAt(0).toUpperCase();
-        }
-    }
-
-    // --- 2. Carregar Contagem de Atividades ---
+    // --- 1. CARREGAR DADOS BÁSICOS ---
     try {
-        const res = await fetch('/api/atividades/minhas', { 
-            headers: { 'Authorization': `Bearer ${token}` } 
-        });
-        if (res.ok) {
-            const data = await res.json();
-            const el = document.getElementById('contador-atividades');
-            if(el) el.textContent = data.length || 0; 
+        const res = await fetch('/api/users/me', { headers: { 'Authorization': `Bearer ${token}` } });
+        if (!res.ok) throw new Error('Erro ao carregar');
+        const user = await res.json();
+
+        // Campos
+        els.nomeInput.value = user.nome;
+        els.emailDisplay.innerText = user.email;
+        els.bioInput.value = user.bio || '';
+        els.cidadeInput.value = user.cidade || '';
+        els.instaInput.value = user.instagram || '';
+
+        // Avatar
+        if (user.avatar && user.avatar.startsWith('data:image')) {
+            els.imgPreview.src = user.avatar;
+            els.imgPreview.classList.remove('hidden');
+            els.iconDefault.classList.add('hidden');
+        } else {
+            els.imgPreview.classList.add('hidden');
+            els.iconDefault.classList.remove('hidden');
         }
-    } catch (error) {
-        console.error("Erro ao carregar contador:", error);
-    }
 
-    // --- 3. Carregar Meus Amigos ---
-    async function carregarMeusAmigos() {
-        const container = document.getElementById('lista-amigos');
-        const contador = document.getElementById('contador-amigos');
-        
+        // Stats
+        if (user.fairplayNota !== undefined) els.fairplay.innerText = user.fairplayNota.toFixed(1);
+        if (user.faltas !== undefined) els.faltas.innerText = user.faltas;
+
+        // Esportes
+        if (user.esportes) {
+            meusEsportes = user.esportes;
+            atualizarTagsVisuais();
+        }
+
+    } catch (error) { console.error(error); }
+
+    // --- 2. CARREGAR AMIGOS E SOLICITAÇÕES ---
+    window.carregarListas = async function() {
+        // Solicitações
         try {
-            const res = await fetch('/api/amigos', { 
-                headers: { 'Authorization': `Bearer ${token}` } 
-            });
-            const amigos = await res.json();
-            
-            if(contador) contador.textContent = amigos.length;
-
-            if (amigos.length === 0) { 
-                container.innerHTML = '<p class="col-span-full text-center text-gray-500 py-10">Você ainda não adicionou amigos.</p>'; 
-                return; 
-            }
-
-            container.innerHTML = amigos.map(u => {
-                const idCorreto = u._id || u.id; // Garante pegar o ID certo do Mongo
-                return `
-                <div class="flex items-center justify-between bg-dark-highlight p-3 rounded-lg border border-gray-700 animate-fade-in group hover:border-gray-600 transition">
-                    <div class="flex items-center gap-3 cursor-pointer" onclick="window.location.href='perfilUsuario.html?id=${idCorreto}'">
-                        <div class="w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center text-white font-bold border border-gray-600">
-                             ${u.avatar && u.avatar.includes('fa-') ? `<i class="${u.avatar}"></i>` : u.nome.charAt(0).toUpperCase()}
-                        </div>
-                        <div>
-                            <p class="text-white font-medium hover:text-neon-blue transition">${u.nome}</p>
-                            <p class="text-xs text-gray-400">${u.email}</p>
-                        </div>
-                    </div>
-                    <button onclick="removerAmigo('${idCorreto}', '${u.nome}')" class="text-gray-500 hover:text-neon-pink transition opacity-0 group-hover:opacity-100 p-2" title="Remover amigo">
-                        <i class="fa-solid fa-trash-can"></i>
-                    </button>
-                </div>
-            `}).join('');
-        } catch (e) { console.error(e); }
-    }
-
-    // --- 4. Carregar Solicitações Pendentes ---
-    async function carregarSolicitacoes() {
-        const container = document.getElementById('lista-solicitacoes');
-        const badge = document.getElementById('badge-solicitacoes');
-        
-        try {
-            const res = await fetch('/api/amigos/pendentes', { 
-                headers: { 'Authorization': `Bearer ${token}` } 
-            });
+            const res = await fetch('/api/amigos/pendentes', { headers: { 'Authorization': `Bearer ${token}` } });
             const pendentes = await res.json();
-
-            if (pendentes.length > 0) {
-                if(badge) badge.classList.remove('hidden');
-                container.innerHTML = pendentes.map(u => {
-                    const idCorreto = u._id || u.id;
-                    return `
-                    <div class="flex items-center justify-between bg-dark-highlight p-4 rounded-lg border border-gray-700 animate-fade-in">
-                        <div class="flex items-center gap-3 cursor-pointer" onclick="window.location.href='perfilUsuario.html?id=${idCorreto}'">
-                            <div class="w-10 h-10 rounded-full bg-neon-pink text-black font-bold flex items-center justify-center border border-neon-pink/50">
-                                ${u.avatar && u.avatar.includes('fa-') ? `<i class="${u.avatar}"></i>` : u.nome.charAt(0).toUpperCase()}
+            
+            if (pendentes.length === 0) {
+                els.boxSolicitacoes.innerHTML = '<p class="text-gray-600 text-sm italic">Nenhuma solicitação pendente.</p>';
+            } else {
+                els.boxSolicitacoes.innerHTML = pendentes.map(u => `
+                    <div class="flex items-center justify-between bg-dark-base p-3 rounded-xl border border-gray-700 animate-fade-in">
+                        <div class="flex items-center gap-3 cursor-pointer" onclick="window.location.href='perfilUsuario.html?id=${u._id}'">
+                            <div class="w-8 h-8 rounded-full bg-gray-800 flex items-center justify-center border border-gray-600 overflow-hidden">
+                                ${u.avatar && u.avatar.startsWith('data:') ? `<img src="${u.avatar}" class="w-full h-full object-cover">` : '<i class="fa-solid fa-user text-xs"></i>'}
                             </div>
-                            <div>
-                                <p class="text-white font-bold text-sm hover:text-neon-blue transition">${u.nome}</p>
-                                <p class="text-gray-400 text-xs">Quer ser seu amigo</p>
-                            </div>
+                            <span class="text-sm font-bold text-white hover:text-neon-blue">${u.nome}</span>
                         </div>
                         <div class="flex gap-2">
-                            <button onclick="responderSolicitacao('${idCorreto}', 'aceitar')" class="bg-neon-blue text-black px-3 py-1 rounded text-xs font-bold hover:bg-white transition"><i class="fa-solid fa-check"></i></button>
-                            <button onclick="responderSolicitacao('${idCorreto}', 'recusar')" class="bg-transparent border border-gray-600 text-gray-400 px-3 py-1 rounded text-xs font-bold hover:text-white transition"><i class="fa-solid fa-xmark"></i></button>
+                            <button onclick="responderSolicitacao('${u._id}', 'aceitar')" class="text-green-400 hover:bg-green-500/10 p-1.5 rounded transition" title="Aceitar"><i class="fa-solid fa-check"></i></button>
+                            <button onclick="responderSolicitacao('${u._id}', 'recusar')" class="text-red-400 hover:bg-red-500/10 p-1.5 rounded transition" title="Recusar"><i class="fa-solid fa-xmark"></i></button>
                         </div>
                     </div>
-                `}).join('');
-            } else {
-                if(badge) badge.classList.add('hidden');
-                container.innerHTML = '<p class="text-gray-500 text-center py-6">Nenhuma solicitação pendente.</p>';
+                `).join('');
             }
-        } catch (e) { console.error(e); }
-    }
+        } catch(e) { console.error(e); }
 
-    // --- Funções Globais (Acessíveis pelo HTML) ---
-
-    window.removerAmigo = async function(amigoId, nomeAmigo) {
-        if (!confirm(`Tem certeza que deseja remover ${nomeAmigo} da sua lista de amigos?`)) return;
+        // Amigos
         try {
-            const res = await fetch(`/api/amigos/${amigoId}`, { 
-                method: 'DELETE', 
-                headers: { 'Authorization': `Bearer ${token}` } 
-            });
-            if (res.ok) { 
-                showToast('Amigo removido.', 'success'); 
-                carregarMeusAmigos(); 
-            }
-        } catch (e) { showToast('Erro ao remover.', 'error'); }
-    };
-
-    window.responderSolicitacao = async function(amigoId, acao) {
-        try {
-            const res = await fetch('/api/amigos/responder', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-                body: JSON.stringify({ amigoId, acao })
-            });
-            if (res.ok) { 
-                showToast(acao === 'aceitar' ? 'Solicitação aceita!' : 'Solicitação recusada.', 'success'); 
-                carregarSolicitacoes(); 
-                if (acao === 'aceitar') carregarMeusAmigos(); 
-            }
-        } catch (e) { showToast('Erro ao responder.', 'error'); }
-    };
-
-    window.adicionarAmigo = async function(friendId) {
-        const btn = event.target.closest('button'); 
-        const originalContent = btn.innerHTML;
-        
-        btn.disabled = true;
-        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
-
-        try {
-            const res = await fetch('/api/amigos/solicitar', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-                body: JSON.stringify({ amigoId: friendId })
-            });
+            const res = await fetch('/api/amigos', { headers: { 'Authorization': `Bearer ${token}` } });
+            const amigos = await res.json();
             
-            if (res.ok) {
-                showToast('Solicitação enviada!', 'success');
-                btn.innerHTML = '<i class="fa-solid fa-check"></i> Enviado';
-                btn.classList.remove('bg-neon-blue', 'text-black');
-                btn.classList.add('bg-green-500', 'text-white');
+            if (amigos.length === 0) {
+                els.boxAmigos.innerHTML = '<p class="text-gray-600 text-sm italic">Você ainda não tem amigos.</p>';
             } else {
-                const data = await res.json();
-                showToast(data.error || 'Erro ao adicionar.', 'warning');
-                btn.innerHTML = originalContent;
-                btn.disabled = false;
+                els.boxAmigos.innerHTML = amigos.map(u => `
+                    <div class="flex items-center justify-between bg-dark-base p-3 rounded-xl border border-gray-700 hover:border-gray-600 transition group animate-fade-in">
+                        <div class="flex items-center gap-3 cursor-pointer" onclick="window.location.href='perfilUsuario.html?id=${u._id}'">
+                            <div class="w-8 h-8 rounded-full bg-gray-800 flex items-center justify-center border border-gray-600 overflow-hidden">
+                                ${u.avatar && u.avatar.startsWith('data:') ? `<img src="${u.avatar}" class="w-full h-full object-cover">` : '<i class="fa-solid fa-user text-xs"></i>'}
+                            </div>
+                            <div>
+                                <p class="text-sm font-bold text-white hover:text-neon-blue">${u.nome}</p>
+                                <p class="text-[10px] text-gray-500">${u.cidade || 'Sem local'}</p>
+                            </div>
+                        </div>
+                        <button onclick="removerAmigo('${u._id}')" class="text-gray-600 hover:text-red-500 opacity-0 group-hover:opacity-100 transition p-2" title="Remover">
+                            <i class="fa-solid fa-trash-can"></i>
+                        </button>
+                    </div>
+                `).join('');
             }
-        } catch (e) { 
-            console.error(e);
-            showToast('Erro de conexão.', 'error');
-            btn.innerHTML = originalContent;
-            btn.disabled = false;
-        }
+        } catch(e) { console.error(e); }
     };
 
-    // --- 5. Sistema de Busca de Usuários ---
-    const inputBusca = document.getElementById('input-busca');
-    const containerResultados = document.getElementById('resultados-busca');
-    let timeoutBusca = null;
+    carregarListas();
 
-    if (inputBusca) {
-        inputBusca.addEventListener('input', (e) => {
-            const termo = e.target.value.trim();
-            clearTimeout(timeoutBusca);
-            
-            if (termo.length < 3) { 
-                containerResultados.innerHTML = '<p class="text-gray-500 text-center text-sm">Digite pelo menos 3 letras...</p>'; 
-                return; 
+    // --- 3. TAGS VISUAIS ---
+    els.sportTags.forEach(btn => {
+        btn.addEventListener('click', () => {
+            const esporte = btn.dataset.sport;
+            if (meusEsportes.includes(esporte)) meusEsportes = meusEsportes.filter(e => e !== esporte);
+            else meusEsportes.push(esporte);
+            atualizarTagsVisuais();
+        });
+    });
+
+    function atualizarTagsVisuais() {
+        els.sportTags.forEach(btn => {
+            if (meusEsportes.includes(btn.dataset.sport)) {
+                btn.classList.add('bg-neon-blue/10', 'border-neon-blue', 'text-neon-blue');
+                btn.classList.remove('bg-dark-base', 'border-gray-700', 'text-gray-400');
+            } else {
+                btn.classList.remove('bg-neon-blue/10', 'border-neon-blue', 'text-neon-blue');
+                btn.classList.add('bg-dark-base', 'border-gray-700', 'text-gray-400');
             }
-
-            timeoutBusca = setTimeout(async () => {
-                containerResultados.innerHTML = '<p class="text-gray-500 text-center text-sm"><i class="fa-solid fa-spinner fa-spin"></i> Buscando...</p>';
-                try {
-                    const res = await fetch(`/api/users/buscar?q=${encodeURIComponent(termo)}`);
-                    if (res.ok) {
-                        const usuarios = await res.json();
-                        
-                        // FILTRO IMPORTANTE: Remove eu mesmo da lista usando .toString()
-                        const filtrados = usuarios.filter(u => {
-                            const uId = u._id || u.id;
-                            const myId = userInfo.id || userInfo._id;
-                            return uId.toString() !== myId.toString();
-                        });
-                        
-                        if (filtrados.length === 0) {
-                            containerResultados.innerHTML = '<p class="text-gray-500 text-center text-sm">Nenhum usuário encontrado.</p>';
-                            return;
-                        }
-
-                        containerResultados.innerHTML = filtrados.map(u => {
-                            const idCorreto = u._id || u.id;
-                            return `
-                            <div class="flex items-center justify-between bg-dark-highlight p-3 rounded-lg border border-gray-700 hover:border-gray-600 transition animate-fade-in">
-                                <div class="flex items-center gap-3 cursor-pointer" onclick="window.location.href='perfilUsuario.html?id=${idCorreto}'">
-                                    <div class="w-8 h-8 rounded-full bg-gray-800 flex items-center justify-center text-white font-bold text-xs border border-gray-500">
-                                        ${u.avatar && u.avatar.includes('fa-') ? `<i class="${u.avatar}"></i>` : u.nome.charAt(0).toUpperCase()}
-                                    </div>
-                                    <div>
-                                        <p class="text-white font-medium text-sm hover:text-neon-blue transition">${u.nome}</p>
-                                        <p class="text-xs text-gray-400">${u.email}</p>
-                                    </div>
-                                </div>
-                                <button onclick="window.adicionarAmigo('${idCorreto}')" class="bg-neon-blue text-black px-3 py-1 rounded text-xs font-bold hover:bg-white transition flex items-center gap-1 z-10 relative">
-                                    <i class="fa-solid fa-user-plus"></i> Add
-                                </button>
-                            </div>`
-                        }).join('');
-                    }
-                } catch (e) { console.error(e); }
-            }, 500);
         });
     }
 
-    // --- 6. Modal de Edição de Perfil ---
-    const modalEditar = document.getElementById('modal-editar-perfil');
-    const formEditar = document.getElementById('form-editar-perfil');
-    const inputNome = document.getElementById('edit-nome');
+    // --- 4. UPLOAD DE FOTO ---
+    if(els.fileInput) {
+        els.fileInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            if (file.size > 70 * 1024) { showToast('Imagem muito grande (Max 70KB).', 'warning'); return; }
 
-    window.abrirModalEditar = function() {
-        if(!modalEditar || !inputNome) return;
-        inputNome.value = userInfo.nome;
-        
-        // Marca o avatar atual
-        const currentAvatar = userInfo.avatar || 'fa-solid fa-user';
-        const radios = document.getElementsByName('avatar-selecionado');
-        for(let r of radios) {
-            if(r.value === currentAvatar) {
-                r.checked = true;
-            }
-        }
+            els.loading.classList.remove('hidden');
+            const reader = new FileReader();
+            reader.onload = function(ev) {
+                avatarBase64 = ev.target.result;
+                els.imgPreview.src = avatarBase64;
+                els.imgPreview.classList.remove('hidden');
+                els.iconDefault.classList.add('hidden');
+                els.loading.classList.add('hidden');
+            };
+            reader.readAsDataURL(file);
+        });
+    }
 
-        modalEditar.classList.remove('hidden');
-        // Animação suave
-        setTimeout(() => {
-            modalEditar.classList.remove('opacity-0');
-            modalEditar.querySelector('div').classList.remove('scale-95');
-            modalEditar.querySelector('div').classList.add('scale-100');
-        }, 10);
-    };
-
-    window.fecharModalEditar = function() {
-        if(!modalEditar) return;
-        modalEditar.classList.add('opacity-0');
-        modalEditar.querySelector('div').classList.remove('scale-100');
-        modalEditar.querySelector('div').classList.add('scale-95');
-        setTimeout(() => modalEditar.classList.add('hidden'), 300);
-    };
-
-    if(formEditar) {
-        formEditar.addEventListener('submit', async (e) => {
+    // --- 5. SALVAR TUDO ---
+    if(els.form) {
+        els.form.addEventListener('submit', async (e) => {
             e.preventDefault();
-            
-            const btnSalvar = document.getElementById('btn-salvar-perfil');
-            const originalText = btnSalvar.innerHTML;
-            btnSalvar.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
-            btnSalvar.disabled = true;
-
-            const novoNome = inputNome.value.trim();
-            const avatarSelecionado = document.querySelector('input[name="avatar-selecionado"]:checked');
-            const novoAvatar = avatarSelecionado ? avatarSelecionado.value : (userInfo.avatar || 'fa-solid fa-user');
+            els.btnSalvar.disabled = true;
+            els.btnSalvar.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Salvando...';
 
             try {
-                const res = await fetch('/api/users/perfil', {
+                const bodyData = {
+                    nome: els.nomeInput.value.trim(),
+                    bio: els.bioInput.value.trim(),
+                    cidade: els.cidadeInput.value.trim(),
+                    instagram: els.instaInput.value.trim(),
+                    esportes: meusEsportes
+                };
+                if (avatarBase64) bodyData.avatar = avatarBase64;
+
+                const res = await fetch('/api/users/me', {
                     method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
-                    },
-                    body: JSON.stringify({ nome: novoNome, avatar: novoAvatar })
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                    body: JSON.stringify(bodyData)
                 });
 
-                if(res.ok) {
-                    // Atualiza o LocalStorage com os novos dados
-                    const newUserInfo = { ...userInfo, nome: novoNome, avatar: novoAvatar };
-                    localStorage.setItem('userInfo', JSON.stringify(newUserInfo));
-                    
-                    showToast('Perfil atualizado com sucesso!', 'success');
-                    setTimeout(() => location.reload(), 1000);
+                if (res.ok) {
+                    showToast('Perfil salvo!', 'success');
+                    const userInfo = JSON.parse(localStorage.getItem('userInfo')) || {};
+                    userInfo.nome = bodyData.nome;
+                    if(avatarBase64) userInfo.avatar = avatarBase64;
+                    localStorage.setItem('userInfo', JSON.stringify(userInfo));
+                    if(typeof atualizarMenu === 'function') atualizarMenu();
                 } else {
-                    const errData = await res.json();
-                    showToast(errData.error || 'Erro ao atualizar.', 'error');
+                    throw new Error('Erro ao salvar');
                 }
             } catch (error) {
-                console.error(error);
-                showToast('Erro de conexão.', 'error');
+                showToast('Erro ao salvar.', 'error');
             } finally {
-                btnSalvar.innerHTML = originalText;
-                btnSalvar.disabled = false;
+                els.btnSalvar.disabled = false;
+                els.btnSalvar.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Salvar Perfil';
             }
         });
     }
-
-    // Fecha modal ao clicar fora
-    if(modalEditar) {
-        modalEditar.addEventListener('click', (e) => {
-            if(e.target === modalEditar) fecharModalEditar();
-        });
-    }
-
-    // Inicialização
-    carregarMeusAmigos();
-    carregarSolicitacoes();
 });
+
+// --- FUNÇÕES GLOBAIS DE AÇÃO (Window) ---
+
+window.responderSolicitacao = async (amigoId, acao) => {
+    try {
+        const token = localStorage.getItem('token');
+        const res = await fetch('/api/amigos/responder', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+            body: JSON.stringify({ amigoId, acao })
+        });
+        if (res.ok) {
+            showToast(acao === 'aceitar' ? 'Amigo adicionado!' : 'Solicitação recusada.', 'success');
+            if (typeof window.carregarListas === 'function') window.carregarListas();
+        }
+    } catch(e) { showToast('Erro na solicitação.', 'error'); }
+};
+
+window.removerAmigo = async (amigoId) => {
+    // ALTERADO: Usa nosso modal estiloso em vez do confirm() nativo
+    const confirmado = await showConfirmModal('Tem certeza que deseja remover este amigo?', 'Sim, Remover', 'Cancelar');
+    
+    if (!confirmado) return;
+
+    try {
+        const token = localStorage.getItem('token');
+        const res = await fetch(`/api/amigos/${amigoId}`, {
+            method: 'DELETE',
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        if (res.ok) {
+            showToast('Amigo removido com sucesso.', 'success');
+            // Remove o item da lista visualmente ou recarrega
+            if (typeof window.carregarListas === 'function') window.carregarListas();
+        } else {
+            showToast('Erro ao remover amigo.', 'error');
+        }
+    } catch(e) { 
+        console.error(e);
+        showToast('Erro de conexão.', 'error'); 
+    }
+};

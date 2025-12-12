@@ -3,6 +3,7 @@ const router = express.Router();
 const Activity = require('../models/Activity');
 const Friendship = require('../models/Friendship');
 const authMiddleware = require('../middleware/auth');
+const Atividade = require('../models/Activity');
 const jwt = require('jsonwebtoken'); // Para decodificar token manualmente na rota pública
 
 // Listar atividades de um usuário específico (Perfil Público)
@@ -97,16 +98,20 @@ router.get('/', async (req, res) => {
 // GET /api/atividades/minhas
 router.get('/minhas', authMiddleware, async (req, res) => {
     try {
-        const atividades = await Activity.find({ criador: req.user.id })
-            .sort({ data_hora: -1 });
-        
-        const resposta = atividades.map(a => ({
-            ...a.toObject(),
-            participantes_count: a.participantes.length,
-            vagas_disponiveis: a.vagas - a.participantes.length
-        }));
-        res.json(resposta);
-    } catch (error) { res.status(500).json({ error: 'Erro ao buscar.' }); }
+        // Busca atividades onde o usuário é o CRIADOR - OU - está na lista de PARTICIPANTES
+        const atividades = await Atividade.find({
+            $or: [
+                { criador: req.user.id },
+                { participantes: req.user.id }
+            ]
+        })
+        .sort({ data_hora: -1 }); // Ordena das mais recentes para as antigas (para ver o que acabou de acontecer)
+
+        res.json(atividades);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Erro ao buscar atividades.' });
+    }
 });
 
 // GET /api/atividades/:id
@@ -130,26 +135,41 @@ router.get('/:id', async (req, res) => {
 
 // POST /api/atividades (Criar)
 router.post('/', authMiddleware, async (req, res) => {
-    const { esporte, titulo, local, data_hora, vagas, visibilidade } = req.body;
-    // Validações básicas...
-    if (!esporte || !titulo || !data_hora || !vagas) return res.status(400).json({ error: 'Preencha tudo.' });
+    const { titulo, esporte, data_hora, local, vagas, privada, descricao } = req.body;
+
+    // Validações básicas
+    if (!titulo || !esporte || !data_hora || !local || !vagas) {
+        return res.status(400).json({ error: 'Preencha todos os campos obrigatórios.' });
+    }
 
     try {
-        const novaAtividade = new Activity({
+        const novaAtividade = new Atividade({
             criador: req.user.id,
-            esporte,
+            // --- A CORREÇÃO MÁGICA ESTÁ AQUI: ---
+            participantes: [req.user.id], // O criador já entra como o primeiro participante!
+            // ------------------------------------
             titulo,
-            local,
+            esporte,
             data_hora,
+            local,
             vagas,
-            visibilidade: visibilidade || 'public',
-            participantes: [] // Começa vazio
+            privada: !!privada, // Força booleano
+            descricao
         });
 
-        const salva = await novaAtividade.save();
-        // Mongo retorna _id, mas front pode esperar id. O json normal do mongoose manda _id.
-        res.status(201).json({ id: salva._id, message: 'Criada com sucesso!' });
-    } catch (error) { res.status(500).json({ error: 'Erro ao criar.' }); }
+        await novaAtividade.save();
+
+        // Retorna a atividade populada para o frontend já mostrar bonitinho se precisar
+        const atividadePopulada = await Atividade.findById(novaAtividade._id)
+            .populate('criador', 'nome avatar')
+            .populate('participantes', 'nome avatar');
+
+        res.status(201).json(atividadePopulada);
+
+    } catch (error) {
+        console.error('Erro ao criar atividade:', error);
+        res.status(500).json({ error: 'Erro ao criar atividade.' });
+    }
 });
 
 // PUT e DELETE (Simplificados)

@@ -29,11 +29,13 @@ document.addEventListener("DOMContentLoaded", async () => {
         
         // Renderiza os componentes da página
         renderizarAtividade(atividade);
-        // INICIA O CHAT SE O USUÁRIO ESTIVER INSCRITO
-    const inscrito = await verificarInscricao(id, token); // Já temos essa função no arquivo
-    if (inscrito || (userInfo && atividade.criador === userInfo.id)) {
-        iniciarChatAtividade(id, token, userInfo);
-    }
+        
+        // INICIA O CHAT SE O USUÁRIO ESTIVER INSCRITO OU FOR O DONO
+        const inscrito = await verificarInscricao(id, token);
+        if (inscrito || (userInfo && atividade.criador === userInfo.id)) {
+            iniciarChatAtividade(id, token, userInfo);
+        }
+        
         await configurarBotaoParticipacao(atividade, token, userInfo);
         
         // Passamos 'atividade' aqui para verificar a data sem precisar buscar de novo
@@ -64,6 +66,7 @@ function renderizarAtividade(atividade) {
     const iconeEsporte = getIconeEsporte(atividade.esporte);
     const dataFormatada = formatarDataHora(atividade.data_hora);
 
+    // HTML Base
     const html = `
         <div class="bg-dark-highlight p-4 rounded-lg flex items-start gap-4 border border-gray-700">
             <i class="${iconeEsporte} text-2xl text-neon-blue mt-1"></i>
@@ -77,6 +80,19 @@ function renderizarAtividade(atividade) {
             <i class="fa-solid fa-calendar-days text-2xl text-neon-blue mt-1"></i>
             <div><strong class="block text-gray-400 text-xs uppercase">Data</strong><span class="text-white text-lg">${dataFormatada}</span></div>
         </div>
+        
+        <div id="card-clima" class="bg-gradient-to-br from-gray-800 to-gray-900 p-4 rounded-lg flex items-center gap-4 border border-gray-700 shadow-lg relative overflow-hidden group">
+            <div class="absolute right-[-20px] top-[-20px] text-6xl text-white/5 rotate-12 group-hover:rotate-0 transition duration-500">
+                <i class="fa-solid fa-cloud"></i>
+            </div>
+            <div id="clima-icone" class="text-3xl text-gray-500"><i class="fa-solid fa-spinner fa-spin"></i></div>
+            <div>
+                <strong class="block text-gray-400 text-xs uppercase">Previsão do Tempo</strong>
+                <span id="clima-texto" class="text-white text-sm font-bold">Carregando...</span>
+                <span id="clima-chuva" class="block text-xs text-neon-blue mt-0.5"></span>
+            </div>
+        </div>
+
         <div class="bg-dark-highlight p-4 rounded-lg flex items-start gap-4 border border-gray-700">
             <i class="fa-solid fa-users text-2xl text-neon-blue mt-1"></i>
             <div><strong class="block text-gray-400 text-xs uppercase">Vagas</strong><span class="text-white text-lg">${atividade.vagas_disponiveis}/${atividade.vagas} ${atividade.lotada ? '(LOTADA)' : ''}</span></div>
@@ -87,6 +103,9 @@ function renderizarAtividade(atividade) {
         </div>
     `;
     container.innerHTML = html;
+
+    // CHAMA A FUNÇÃO DE BUSCAR O CLIMA (ASSÍNCRONA)
+    carregarPrevisaoTempo(atividade.local, atividade.data_hora);
 }
 
 async function configurarBotaoParticipacao(atividade, token, userInfo) {
@@ -232,7 +251,7 @@ async function carregarParticipantes(atividadeId, atividadeDados) {
         const resPart = await fetch(`/api/atividades/${atividadeId}/participantes`);
         const participantes = await resPart.json();
 
-        // 3. (NOVO) Busca quem eu já avaliei (só se estiver logado e a atividade acabou)
+        // 3. Busca quem eu já avaliei
         let jaAvaliei = [];
         if (token && atividadeFinalizada) {
             try {
@@ -262,11 +281,9 @@ async function carregarParticipantes(atividadeId, atividadeDados) {
                     const pId = p._id || p.id;
                     const ehVoce = pId === meuId;
                     
-                    // Lógica do botão de avaliação
                     let actionArea = '';
                     
                     if (atividadeFinalizada && !ehVoce && meuUser) {
-                        // Verifica se o ID deste participante está na lista de "jaAvaliei"
                         if (jaAvaliei.includes(pId)) {
                             actionArea = `
                                 <span class="ml-auto text-xs bg-green-500/10 border border-green-500 text-green-500 px-2 py-1 rounded flex items-center gap-1 cursor-default">
@@ -300,6 +317,7 @@ async function carregarParticipantes(atividadeId, atividadeDados) {
         `;
     } catch (e) { console.error(e); }
 }
+
 function renderizarMapa(atividade) {
     const mapSection = document.getElementById("mapa-section");
     const mapDiv = document.getElementById("map");
@@ -402,7 +420,7 @@ function configurarFormularioFairplay() {
         });
 
         // Envio da avaliação
-       formFP.addEventListener('submit', async (e) => {
+        formFP.addEventListener('submit', async (e) => {
             e.preventDefault();
             const btnSubmit = formFP.querySelector('button[type="submit"]');
             const originalText = btnSubmit.innerHTML;
@@ -413,7 +431,6 @@ function configurarFormularioFairplay() {
                 const token = localStorage.getItem('token');
                 const avaliadoId = document.getElementById('fp-avaliado-id').value;
                 const atividadeId = formFP.dataset.atividadeId;
-                // ... (captura dos outros campos continua igual) ...
                 const compareceu = document.querySelector('input[name="fp-compareceu"]:checked').value === 'true';
                 const respeito = parseInt(document.getElementById('fp-respeito').value);
                 const jogoLimpo = parseInt(document.getElementById('fp-jogolimpo').value);
@@ -431,8 +448,6 @@ function configurarFormularioFairplay() {
                     showToast('Avaliação enviada!', 'success');
                     window.fecharModalFairplay();
                     
-                    // ATUALIZAÇÃO: Recarrega a lista para mostrar o "Check" verde
-                    // Passamos um objeto simples com data no passado para forçar o modo "atividade finalizada" sem fetch extra
                     const fakeAtvData = { data_hora: new Date(0).toISOString() }; 
                     await carregarParticipantes(atividadeId, fakeAtvData);
                     
@@ -449,7 +464,8 @@ function configurarFormularioFairplay() {
         });
     }
 }
-// --- LÓGICA DO CHAT DA ATIVIDADE --
+
+// --- LÓGICA DO CHAT DA ATIVIDADE ---
 let socketAtividade = null;
 
 async function iniciarChatAtividade(atividadeId, token, userInfo) {
@@ -462,7 +478,7 @@ async function iniciarChatAtividade(atividadeId, token, userInfo) {
 
     if (!container) return;
     
-    // EVITA DUPLICIDADE: Se já conectou, não conecta de novo
+    // EVITA DUPLICIDADE
     if (socketAtividade) return;
 
     // Mostra o chat
@@ -475,21 +491,19 @@ async function iniciarChatAtividade(atividadeId, token, userInfo) {
 
         // OUVINTE: Quando chega mensagem do servidor
         socketAtividade.on('receber_msg_atividade', (msg) => {
-            // CORREÇÃO: Garante a comparação correta de IDs
             const remetenteId = msg.remetente._id || msg.remetente;
             const meuId = userInfo.id || userInfo._id;
             const souEu = remetenteId.toString() === meuId.toString();
 
-            // TRUQUE: Se fui eu que mandei, ignoro o retorno do servidor 
-            // porque já renderizei a mensagem manualmente no submit (Otimismo)
+            // Ignora eco se fui eu
             if (souEu) return;
 
-            renderizarMensagem(msg, false); // false = não sou eu
+            renderizarMensagem(msg, false);
             boxMensagens.scrollTop = boxMensagens.scrollHeight;
         });
     }
 
-    // 2. Carrega Histórico e Verifica Validade (24h)
+    // 2. Carrega Histórico
     try {
         const res = await fetch(`/api/chat/atividade/${atividadeId}`, {
             headers: { 'Authorization': `Bearer ${token}` }
@@ -497,7 +511,6 @@ async function iniciarChatAtividade(atividadeId, token, userInfo) {
         const data = await res.json();
 
         if (data.expirado) {
-            // BLOQUEIA O CHAT
             input.disabled = true;
             input.placeholder = "Chat encerrado.";
             form.querySelector('button').disabled = true;
@@ -508,7 +521,6 @@ async function iniciarChatAtividade(atividadeId, token, userInfo) {
             aviso.classList.remove('hidden');
         }
 
-        // Renderiza histórico
         boxMensagens.innerHTML = '';
         if (data.mensagens.length === 0) {
             boxMensagens.innerHTML = '<p class="text-center text-gray-600 text-sm mt-10" id="msg-vazia">Inicie a conversa!</p>';
@@ -530,11 +542,9 @@ async function iniciarChatAtividade(atividadeId, token, userInfo) {
         const texto = input.value.trim();
         if (!texto) return;
 
-        // Limpa input
         input.value = '';
 
-        // UI OTIMISTA: Mostra a mensagem imediatamente na tela (sem esperar o servidor)
-        // Cria um objeto de mensagem temporário para exibir agora
+        // UI OTIMISTA
         const msgTemp = {
             texto: texto,
             data_envio: new Date(),
@@ -543,7 +553,7 @@ async function iniciarChatAtividade(atividadeId, token, userInfo) {
                 avatar: userInfo.avatar
             }
         };
-        renderizarMensagem(msgTemp, true); // true = sou eu
+        renderizarMensagem(msgTemp, true);
         boxMensagens.scrollTop = boxMensagens.scrollHeight;
 
         try {
@@ -555,7 +565,6 @@ async function iniciarChatAtividade(atividadeId, token, userInfo) {
 
             if (res.ok) {
                 const msgSalva = await res.json();
-                // Avisa o servidor para mostrar aos OUTROS
                 socketAtividade.emit('enviar_msg_atividade', {
                     atividadeId,
                     texto: msgSalva.texto,
@@ -573,8 +582,6 @@ async function iniciarChatAtividade(atividadeId, token, userInfo) {
 
 function renderizarMensagem(msg, souEu) {
     const box = document.getElementById('box-mensagens');
-    
-    // Remove mensagem de "vazio" se existir
     if (box.innerText === 'Inicie a conversa!') box.innerHTML = '';
 
     const div = document.createElement('div');
@@ -595,4 +602,174 @@ function renderizarMensagem(msg, souEu) {
         </div>
     `;
     box.appendChild(div);
+}
+
+// --- SISTEMA DE PREVISÃO DO TEMPO (Com GPS) ---
+
+// Função auxiliar para transformar o navigator.geolocation em Promise
+function obterLocalizacaoUsuario() {
+    return new Promise((resolve, reject) => {
+        if (!navigator.geolocation) {
+            reject(new Error('Geolocalização não suportada pelo navegador.'));
+        } else {
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    resolve({
+                        lat: position.coords.latitude,
+                        lon: position.coords.longitude
+                    });
+                },
+                (error) => {
+                    reject(error);
+                }
+            );
+        }
+    });
+}
+
+async function carregarPrevisaoTempo(local, dataHoraString) {
+    const elIcone = document.getElementById('clima-icone');
+    const elTexto = document.getElementById('clima-texto');
+    const elChuva = document.getElementById('clima-chuva');
+    const card = document.getElementById('card-clima');
+
+    if (!local || !dataHoraString) return;
+
+    const dataAtividade = new Date(dataHoraString);
+    const hoje = new Date();
+    
+    // Diferença em dias
+    const diffTime = dataAtividade - hoje;
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+    if (diffDays < 0) {
+        atualizarUIClima('fa-solid fa-clock-rotate-left', 'Atividade já realizada', '', 'text-gray-400');
+        return;
+    } 
+    if (diffDays > 14) {
+        atualizarUIClima('fa-solid fa-calendar-plus', 'Previsão indisponível (muito distante)', '', 'text-gray-500');
+        return;
+    }
+
+    let lat, lon;
+
+    try {
+        // TENTATIVA 1: Busca pelo Nome do Local
+        let queryLocal = local;
+        // Se quiser "ajudar" a busca: 
+        // if (!queryLocal.toLowerCase().includes('brasil')) queryLocal += ', Brasil';
+
+        let resGeo = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(queryLocal)}&format=json&limit=1`);
+        let dataGeo = await resGeo.json();
+
+        if (dataGeo && dataGeo.length > 0) {
+            // Achou pelo nome!
+            lat = dataGeo[0].lat;
+            lon = dataGeo[0].lon;
+        } else {
+            // TENTATIVA 2: Não achou o nome? Pede o GPS do usuário!
+            console.warn(`Local "${local}" não encontrado. Solicitando GPS...`);
+            
+            if(elTexto) elTexto.innerText = "Localizando você...";
+            
+            try {
+                const posicao = await obterLocalizacaoUsuario();
+                lat = posicao.lat;
+                lon = posicao.lon;
+                
+                if(elTexto) elTexto.innerText += " (Sua Localização)";
+                showToast('Local do evento não encontrado. Usando sua localização.', 'warning');
+
+            } catch (gpsError) {
+                // TENTATIVA 3 (Fallback Final): Pelotas
+                console.warn("GPS negado ou indisponível. Usando Pelotas como fallback.");
+                const resFallback = await fetch(`https://nominatim.openstreetmap.org/search?q=Pelotas, RS&format=json&limit=1`);
+                const dataFallback = await resFallback.json();
+                
+                if(dataFallback.length > 0) {
+                    lat = dataFallback[0].lat;
+                    lon = dataFallback[0].lon;
+                    if(elTexto) elTexto.innerText += " (Pelotas)";
+                } else {
+                    throw new Error('Localização impossível de determinar.');
+                }
+            }
+        }
+
+        // --- 3. Busca Clima (Open-Meteo) com as coordenadas obtidas ---
+        const dateStr = dataAtividade.toISOString().split('T')[0];
+        const hour = dataAtividade.getHours();
+
+        const urlMeteo = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&hourly=temperature_2m,precipitation_probability,weathercode&start_date=${dateStr}&end_date=${dateStr}&timezone=America%2FSao_Paulo`;
+
+        const resMeteo = await fetch(urlMeteo);
+        const dataMeteo = await resMeteo.json();
+
+        if(!dataMeteo.hourly) throw new Error('Dados de clima incompletos');
+
+        const temp = dataMeteo.hourly.temperature_2m[hour];
+        const probChuva = dataMeteo.hourly.precipitation_probability[hour];
+        const code = dataMeteo.hourly.weathercode[hour];
+
+        const infoWMO = getWMOInfo(code);
+        
+        let corIcone = 'text-white';
+        if (code <= 3) corIcone = 'text-yellow-400';
+        else if (code >= 51) corIcone = 'text-neon-blue';
+
+        // Recupera o texto base (caso tenha adicionado "(Sua Localização)")
+        let textoBase = elTexto ? elTexto.innerText.replace('Carregando...', '').replace('Localizando você...', '') : '';
+        if(textoBase === '') textoBase = infoWMO.texto; 
+        else textoBase = `${infoWMO.texto} ${textoBase.includes('(') ? textoBase.substring(textoBase.indexOf('(')) : ''}`;
+
+        atualizarUIClima(
+            infoWMO.icone, 
+            `${Math.round(temp)}°C - ${textoBase}`, 
+            `Chuva: ${probChuva}%`,
+            corIcone
+        );
+
+        if (probChuva > 50 && card) {
+            card.classList.remove('from-gray-800', 'to-gray-900', 'border-gray-700');
+            card.classList.add('from-red-900/40', 'to-black', 'border-neon-pink');
+        }
+
+    } catch (error) {
+        console.error('Erro clima:', error);
+        atualizarUIClima('fa-solid fa-cloud-question', 'Clima indisponível', 'Verifique a localização', 'text-gray-500');
+    }
+}
+
+function atualizarUIClima(icone, texto, chuva, corIcone) {
+    const elIcone = document.getElementById('clima-icone');
+    const elTexto = document.getElementById('clima-texto');
+    const elChuva = document.getElementById('clima-chuva');
+
+    if(elIcone) elIcone.innerHTML = `<i class="${icone} ${corIcone}"></i>`;
+    if(elTexto) elTexto.textContent = texto;
+    if(elChuva) elChuva.textContent = chuva;
+}
+
+function getWMOInfo(code) {
+    const map = {
+        0: { texto: 'Céu Limpo', icone: 'fa-solid fa-sun' },
+        1: { texto: 'Predom. Ensolarado', icone: 'fa-solid fa-cloud-sun' },
+        2: { texto: 'Parcial. Nublado', icone: 'fa-solid fa-cloud-sun' },
+        3: { texto: 'Nublado', icone: 'fa-solid fa-cloud' },
+        45: { texto: 'Nevoeiro', icone: 'fa-solid fa-smog' },
+        48: { texto: 'Nevoeiro com Geada', icone: 'fa-solid fa-smog' },
+        51: { texto: 'Garoa Leve', icone: 'fa-solid fa-cloud-rain' },
+        53: { texto: 'Garoa Moderada', icone: 'fa-solid fa-cloud-rain' },
+        55: { texto: 'Garoa Densa', icone: 'fa-solid fa-cloud-showers-heavy' },
+        61: { texto: 'Chuva Leve', icone: 'fa-solid fa-cloud-rain' },
+        63: { texto: 'Chuva Moderada', icone: 'fa-solid fa-cloud-showers-heavy' },
+        65: { texto: 'Chuva Forte', icone: 'fa-solid fa-cloud-showers-water' },
+        71: { texto: 'Neve', icone: 'fa-regular fa-snowflake' },
+        80: { texto: 'Pancadas de Chuva', icone: 'fa-solid fa-cloud-showers-heavy' },
+        81: { texto: 'Pancadas Fortes', icone: 'fa-solid fa-cloud-bolt' },
+        82: { texto: 'Tempestade', icone: 'fa-solid fa-bolt' },
+        95: { texto: 'Trovoadas', icone: 'fa-solid fa-bolt' },
+        96: { texto: 'Trovoadas com Granizo', icone: 'fa-solid fa-cloud-meatball' }
+    };
+    return map[code] || { texto: 'Indefinido', icone: 'fa-solid fa-cloud' };
 }

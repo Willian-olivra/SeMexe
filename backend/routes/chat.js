@@ -123,4 +123,33 @@ router.post('/atividade/enviar', auth, async (req, res) => {
     }
 });
 
+router.post('/privada', auth, async (req, res) => {
+    try {
+        const { destinatarioId, texto } = req.body;
+
+        if (!destinatarioId || !texto) {
+            return res.status(400).json({ error: 'Dados incompletos.' });
+        }
+
+        // Verifica se destinatário existe
+        const destinatario = await User.findById(destinatarioId);
+        if (!destinatario) return res.status(404).json({ error: 'Usuário não encontrado.' });
+
+        const novaMensagem = await Mensagem.create({
+            remetente: req.user.id,
+            destinatario: destinatarioId,
+            texto: texto,
+            data_envio: new Date()
+        });
+
+        await novaMensagem.populate('remetente', 'nome avatar');
+
+        res.status(201).json(novaMensagem);
+
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Erro ao enviar mensagem.' });
+    }
+});
+
 module.exports = router;

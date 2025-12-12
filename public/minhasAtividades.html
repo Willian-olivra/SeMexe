@@ -8,7 +8,7 @@
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
     
     <script src="https://cdn.tailwindcss.com"></script>
@@ -23,52 +23,78 @@
                         'dark-surface': '#1E1E1E',
                         'dark-highlight': '#2D2D2D',
                     },
-                    fontFamily: { sans: ['Poppins', 'sans-serif'] }
+                    fontFamily: { sans: ['Poppins', 'sans-serif'] },
+                    backgroundImage: {
+                        // SUA IMAGEM MANTIDA
+                        'hero-pattern': "url('https://plus.unsplash.com/premium_photo-1714573002161-8d58573b660d?q=80&w=870&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D')"
+                    }
                 }
             }
         }
     </script>
     <style>
-        #nav-menu a { color: #d1d5db; font-weight: 500; transition: all 0.3s ease; }
-        #nav-menu a:hover { color: #00E5FF; text-shadow: 0 0 8px rgba(0, 229, 255, 0.5); }
+        #nav-menu a { color: #e5e7eb; font-weight: 500; transition: all 0.3s ease; text-shadow: 0 1px 3px rgba(0,0,0,0.5); }
+        #nav-menu a:hover { color: #00E5FF; text-shadow: 0 0 10px rgba(0, 229, 255, 0.8); }
         .hamburger-toggle .line { transition: all 0.3s ease-in-out; }
         .hamburger-toggle.active .line-1 { transform: translateY(8px) rotate(45deg); }
         .hamburger-toggle.active .line-2 { opacity: 0; }
         .hamburger-toggle.active .line-3 { transform: translateY(-8px) rotate(-45deg); }
+        input[type="file"] { display: none; }
+        html { scroll-behavior: smooth; }
+        body.has-bottom-nav footer { padding-bottom: 90px; }
     </style>
 </head>
 <body class="bg-dark-base text-gray-200 font-sans min-h-screen flex flex-col selection:bg-neon-blue selection:text-black">
 
-    <header class="bg-dark-surface py-4 border-b border-gray-800 sticky top-0 z-50 shadow-lg shadow-black/50">
-        <nav class="container mx-auto px-5 flex justify-between items-center relative">
-            <a href="index.html" class="text-2xl font-bold text-neon-blue italic flex items-center gap-2 hover:scale-105 transition-transform">
-                <i class="fa-solid fa-bolt"></i> Se Mexe
-            </a>
-            
-            <button id="hamburger-btn" aria-label="Abrir menu principal" class="hamburger-toggle md:hidden flex flex-col gap-1.5 cursor-pointer z-50">
-                <span class="line line-1 block w-6 h-0.5 bg-neon-blue"></span>
-                <span class="line line-2 block w-6 h-0.5 bg-neon-blue"></span>
-                <span class="line line-3 block w-6 h-0.5 bg-neon-blue"></span>
-            </button>
+    <div class="relative w-full h-[50vh] md:h-[60vh] flex flex-col overflow-hidden">
+        <div class="absolute inset-0 bg-hero-pattern bg-cover bg-center bg-fixed animate-[pulse_20s_ease-in-out_infinite] scale-105"></div>
+        
+        <div class="absolute inset-0 bg-gradient-to-b from-black/80 via-black/60 to-dark-base"></div>
 
-            <div id="nav-menu-wrapper" class="fixed inset-0 bg-dark-base/95 backdrop-blur-md flex flex-col items-center justify-center gap-8 text-xl transition-transform duration-300 translate-x-full md:translate-x-0 md:static md:bg-transparent md:flex-row md:gap-8 md:text-base md:h-auto border-l border-gray-800 md:border-none">
-                <ul id="nav-menu" class="flex flex-col md:flex-row gap-6 items-center mb-4 md:mb-0"></ul>
-            </div>
-        </nav>
-    </header>
+        <header class="absolute top-0 left-0 w-full z-50 py-6">
+            <nav class="container mx-auto px-5 flex justify-between items-center relative">
+                <a href="index.html" class="text-3xl font-black text-white italic flex items-center gap-2 tracking-tighter drop-shadow-lg">
+                    <i class="fa-solid fa-bolt text-neon-blue"></i> Se<span class="text-neon-blue">Mexe</span>
+                </a>
+                
+                <button id="hamburger-btn" aria-label="Abrir menu principal" class="hamburger-toggle md:hidden flex flex-col gap-1.5 cursor-pointer z-50">
+                    <span class="line line-1 block w-6 h-0.5 bg-neon-blue"></span>
+                    <span class="line line-2 block w-6 h-0.5 bg-neon-blue"></span>
+                    <span class="line line-3 block w-6 h-0.5 bg-neon-blue"></span>
+                </button>
 
-    <main class="container mx-auto px-5 flex-grow py-10">
+                <div id="nav-menu-wrapper" class="fixed inset-0 bg-dark-base/95 backdrop-blur-md flex flex-col items-center justify-center gap-8 text-xl transition-transform duration-300 translate-x-full md:translate-x-0 md:static md:bg-transparent md:flex-row md:gap-8 md:text-base md:h-auto md:border-none">
+                    <ul id="nav-menu" class="flex flex-col md:flex-row gap-6 items-center mb-4 md:mb-0"></ul>
+                </div>
+            </nav>
+        </header>
+
+        <div class="relative z-30 container mx-auto px-5 flex-grow flex flex-col justify-center text-center pt-20">
+            <span class="text-neon-blue font-bold tracking-widest uppercase text-xs md:text-sm mb-2 animate-fade-in-up">Painel de Controle</span>
+            <h1 class="text-4xl md:text-5xl font-black text-white mb-4 drop-shadow-2xl">
+                Minhas Atividades
+            </h1>
+            <p class="text-gray-300 max-w-lg mx-auto drop-shadow-md">Gerencie seus eventos, edite informações e acompanhe quem vai jogar.</p>
+        </div>
+    </div>
+
+    <main class="container mx-auto px-5 flex-grow -mt-20 relative z-40 pb-20">
         <section>
-            <h2 class="text-center text-3xl font-bold text-white mb-4">Minhas Atividades</h2>
-            <p class="text-center text-gray-500 mb-10">Gerencie aqui o que você organizou.</p>
+            <div class="flex justify-center md:justify-end mb-8 relative z-50">
+                <a href="criarAtividade.html" class="bg-neon-blue text-black font-bold px-6 py-3 rounded-full hover:bg-white hover:scale-105 transition shadow-[0_0_20px_rgba(0,229,255,0.4)] flex items-center gap-2 group cursor-pointer">
+                    <i class="fa-solid fa-plus bg-black text-neon-blue p-1 rounded-full text-xs group-hover:bg-neon-blue group-hover:text-black transition"></i>
+                    Criar Nova
+                </a>
+            </div>
 
             <div class="event-list grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                </div>
+                <p class="col-span-full text-center text-gray-500 py-10 animate-pulse">Carregando seus eventos...</p>
+            </div>
         </section>
     </main>
 
-    <footer class="bg-black border-t border-gray-900 text-white py-8 mt-auto text-center">
-        <h4 class="text-xl text-white font-bold mb-2 italic"><i class="fa-solid fa-bolt text-neon-blue"></i> Se Mexe</h4>
+    <footer class="bg-black border-t border-gray-900 text-white py-12 mt-auto text-center">
+        <h4 class="text-2xl font-black italic mb-2 text-white flex justify-center items-center gap-2"><i class="fa-solid fa-bolt text-neon-blue"></i> Se Mexe</h4>
         <p class="text-gray-500 text-sm">&copy; 2025 Se Mexe. Direitos Reservados.</p>
     </footer>
     
