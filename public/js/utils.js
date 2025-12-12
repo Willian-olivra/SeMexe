@@ -126,7 +126,7 @@ function getUsuarioLogado() {
 
 function logout() {
     localStorage.clear();
-    showToast('Até logo! 👋', 'info');
+    showToast('Até logo!', 'info');
     setTimeout(() => window.location.href = 'index.html', 1000);
 }
 

@@ -46,7 +46,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // --- LÓGICA DE LOGIN (2 PASSOS) ---
     const formLogin = document.getElementById('login-form');
     const step1 = document.getElementById('step-1');
     const step2 = document.getElementById('step-2');
@@ -119,7 +118,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (res.ok) {
                         localStorage.setItem('token', data.token);
                         localStorage.setItem('userInfo', JSON.stringify(data.user));
-                        showToast('Login realizado! 🚀', 'success');
+                        showToast('Login realizado!', 'success');
                         setTimeout(() => window.location.href = 'index.html', 1000);
                     } else {
                         showToast(data.error || 'Código inválido.', 'error');

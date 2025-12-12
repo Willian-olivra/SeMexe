@@ -145,9 +145,7 @@ router.post('/', authMiddleware, async (req, res) => {
     try {
         const novaAtividade = new Atividade({
             criador: req.user.id,
-            // --- A CORREÇÃO MÁGICA ESTÁ AQUI: ---
             participantes: [req.user.id], // O criador já entra como o primeiro participante!
-            // ------------------------------------
             titulo,
             esporte,
             data_hora,
@@ -172,7 +170,6 @@ router.post('/', authMiddleware, async (req, res) => {
     }
 });
 
-// PUT e DELETE (Simplificados)
 router.put('/:id', authMiddleware, async (req, res) => {
     try {
         const atividade = await Activity.findOneAndUpdate(
